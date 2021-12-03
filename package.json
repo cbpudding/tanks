@@ -1,0 +1,16 @@
+{
+  "name": "tanks",
+  "version": "1.0.0",
+  "description": "A web game based around tanks",
+  "main": "index.js",
+  "scripts": {
+    "test": "node ."
+  },
+  "author": "Alexander Hill",
+  "license": "0BSD",
+  "dependencies": {
+    "express": "^4.17.1",
+    "uuid": "^8.3.2",
+    "ws": "^8.3.0"
+  }
+}
