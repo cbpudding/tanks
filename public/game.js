@@ -298,7 +298,7 @@ $(() => {
         loadModel("base", "models/tank_bottom.glb"),
         loadModel("cannon", "models/tank_top.glb")
     ]).then(() => {
-        websock = new WebSocket("ws://home.breadpudding.dev:3000/");
+        websock = new WebSocket("ws://" + location.hostname + ":3000/");
 
         websock.onmessage = event => {
             let msg = JSON.parse(event.data);

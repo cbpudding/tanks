@@ -1,3 +1,8 @@
+@font-face {
+  font-family: SigmarOne;
+  src: url(/fonts/SigmarOne-Regular.ttf);
+}
+
 #display {
     background-color: black;
     height: 100%;
@@ -8,16 +13,62 @@
 }
 
 #menu {
-    background-color: black;
+    background-color: rgba(0, 0, 0, 0.75);
     height: 100%;
     left: 0;
-    opacity: 0.25;
+    /*opacity: 0.25;*/
     position: absolute;
     top: 0;
     width: 100%;
     z-index: 1;
 }
 
+#title {
+  font-family: SigmarOne;
+  font-size: 10em;
+  color: red;
+  text-align: center;
+  padding-top: 1em;
+  padding-bottom: 0px;
+  margin: 0px;
+}
+
+#creators {
+  font-family: SigmarOne;
+  font-size: 2em;
+  color: green;
+  text-align: center;
+  padding-top: 0px;
+  padding-bottom: 0.5em;
+  margin: 0px;
+
+}
+
 #nickname {
     text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    width: 15em;
+}
+
+#roomcode {
+    text-align: center;
+    margin-top: 1em;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+
+    width: 15em;
+}
+
+button {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
+    width: 15em;
+
+    border-radius: 0px;
 }
