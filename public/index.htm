@@ -1,23 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" prefix="og: https://ogp.me/ns#">
     <head>
         <link rel="stylesheet" href="style.css" />
+        <meta name="description" content="A game by Alexander Hill and Nicholas McDaniel" />
+        <meta name="robots" content="index,nofollow" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta property="og:description" content="A game by Alexander Hill and Nicholas McDaniel" />
+        <meta property="og:image" content="http://nick.breadpudding.dev:3000/images/tanks.png" />
+        <meta property="og:title" content="Tanks!" />
+        <meta property="og:url" content="http://tanks.breadpudding.dev/" />
         <script src="jquery-3.6.0.min.js"></script>
         <script src="three.min.js"></script>
         <script src="GLTFLoader.js"></script>
         <script src="game.js"></script>
         <title>Tanks</title>
-
-        <meta property="og:title" content="Tanks!"/>
-        <meta property="og:description" content="A game by Alexander Hill and Nicholas McDaniel"/>
-        <meta property="og:image" content="http://nick.breadpudding.dev:3000/images/tanks.png">
     </head>
     <body>
         <div id="menu">
-            <p id="title">Tanks!</p>
-            <p id="creators">A game by Alexander Hill and Nicholas McDaniel</p>
-            <input id="nickname" type="text" placeholder="Nickname" />
-            <button>Play</button>
+            <div id="main">
+                <p id="title">Tanks!</p>
+                <p id="creators">A game by Alexander Hill and Nicholas McDaniel</p>
+                <input id="nickname" type="text" placeholder="Nickname" />
+                <button>Play</button>
+            </div>
+            <div id="settings"></div>
         </div>
         <canvas id="display"></canvas>
     </body>

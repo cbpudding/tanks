@@ -1,6 +1,16 @@
 @font-face {
-  font-family: SigmarOne;
-  src: url("/fonts/SigmarOne-Regular.ttf");
+    font-family: SigmarOne;
+    src: url("/fonts/SigmarOne-Regular.ttf");
+}
+
+#creators {
+    color: green;
+    font-family: SigmarOne;
+    font-size: 2em;
+    margin: 0;
+    padding-bottom: 0.5em;
+    padding-top: 0;
+    text-align: center;
 }
 
 #display {
@@ -13,63 +23,64 @@
     width: 100%;
 }
 
+#main {
+    height: 50%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: 100%;
+}
+
 #menu {
     background-color: rgba(0, 0, 0, 0.75);
     height: 100%;
     left: 0;
-    /*opacity: 0.25;*/
     position: absolute;
     top: 0;
     width: 100%;
     z-index: 1;
 }
 
-#title {
-  font-family: SigmarOne;
-  font-size: 10em;
-  color: red;
-  text-align: center;
-  padding-top: 1em;
-  padding-bottom: 0px;
-  margin: 0px;
-}
-
-#creators {
-  font-family: SigmarOne;
-  font-size: 2em;
-  color: green;
-  text-align: center;
-  padding-top: 0px;
-  padding-bottom: 0.5em;
-  margin: 0px;
-
-}
-
 #nickname {
-    text-align: center;
+    display: block;
     margin-left: auto;
     margin-right: auto;
-    display: block;
-
+    text-align: center;
     width: 15em;
 }
 
 #roomcode {
-    text-align: center;
-    margin-top: 1em;
+    display: block;
     margin-left: auto;
     margin-right: auto;
-    display: block;
-
+    margin-top: 1em;
+    text-align: center;
     width: 15em;
 }
 
-button {
+#settings {
+    height: 50%;
+    left: 0;
+    position: absolute;
+    top: 50%;
+    width: 100%;
+}
+
+#title {
+    color: red;
+    font-family: SigmarOne;
+    font-size: 10em;
+    padding-bottom: 0;
+    padding-top: 1em;
+    margin: 0;
     text-align: center;
+}
+
+button {
+    border-radius: 0px;
+    display: block;
     margin-left: auto;
     margin-right: auto;
-    display: block;
+    text-align: center;
     width: 15em;
-
-    border-radius: 0px;
 }
