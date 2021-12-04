@@ -1,10 +1,11 @@
 @font-face {
   font-family: SigmarOne;
-  src: url(/fonts/SigmarOne-Regular.ttf);
+  src: url("/fonts/SigmarOne-Regular.ttf");
 }
 
 #display {
     background-color: black;
+    cursor: url("/sprites/crosshair.png") 36 36, move;
     height: 100%;
     left: 0;
     position: absolute;

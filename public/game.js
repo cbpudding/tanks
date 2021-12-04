@@ -10,6 +10,7 @@
 
 $(() => {
     const canvas = $("#display")[0];
+    const clock = new THREE.Clock();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 128);
     const renderer = new THREE.WebGLRenderer({canvas});
@@ -62,6 +63,7 @@ $(() => {
             this.baseAngle = 0; // Y rotation
             this.cannon = models.cannon.clone();
             this.cannonAngle = 0; // Y rotation
+            this.desiredBaseAngle = 0;
             this.team = team;
             this.x = 0; // 3D coordinate X
             this.y = 0; // 3D coordinate Z
@@ -72,7 +74,41 @@ $(() => {
             tanks[id] = this;
         }
 
-        update() {
+        update(deltatime) {
+            // Calculate base angle tweening
+            //console.log(Math.abs(Math.abs(this.desiredBaseAngle) - Math.abs(this.baseAngle)));
+
+            if (this.desiredBaseAngle != this.baseAngle) {
+
+                if(this.desiredBaseAngle < 0) {
+                    this.desiredBaseAngle += 2 * Math.PI;
+                }
+
+                if(this.baseAngle < 0) {
+                    this.baseAngle += 2 * Math.PI;
+                }
+
+                //console.log(this.desiredBaseAngle);
+                let min_distance_plus  = [
+                    this.baseAngle,
+                    this.baseAngle + Math.PI,
+                    this.baseAngle + 2*Math.PI].map((rad) => {
+                        return [rad, rad - this.desiredBaseAngle];
+                    }).reduce((x, min) => Math.abs(x[1]) < Math.abs(min[1]) ? x : min);
+
+                console.log(min_distance);
+
+                if (min_distance[1] < 0) {
+                    this.baseAngle += 3 * Math.PI * deltatime;
+
+                    if(this.baseAngle > this.desiredBaseAngle) this.baseAngle = min_distance[0];
+                } else {
+                    this.baseAngle -= 3 * Math.PI * deltatime;
+
+                    if(this.baseAngle < this.desiredBaseAngle) this.baseAngle = min_distance[0];
+                }
+            }
+
             this.base.position.x = this.x;
             this.base.position.z = this.y;
             this.base.rotation.y = this.baseAngle;
@@ -152,7 +188,7 @@ $(() => {
         red: new Team(0xff1209)
     };
 
-    function updateLocalTank() {
+    function updateLocalTank(deltatime) {
         if(localTank) {
             if(buttons.down || buttons.left || buttons.right || buttons.up) {
                 let dir = {x: 0, y: 0};
@@ -184,10 +220,10 @@ $(() => {
                 desiredAngle = localTank.baseAngle;
                 direction = {x: 0, y: 0};
             }
-            localTank.baseAngle = desiredAngle;
-            // TODO: Tie tank movement to delta time rather than framerate
-            localTank.x += direction.x * 0.03;
-            localTank.y += direction.y * -0.03;
+            localTank.desiredBaseAngle = desiredAngle;
+
+            localTank.x += direction.x * 2 * deltatime;
+            localTank.y -= direction.y * 2 * deltatime;
             setCameraPosition(localTank.x, localTank.y);
         }
     }
@@ -229,9 +265,12 @@ $(() => {
 
     function renderScene() {
         requestAnimationFrame(renderScene);
-        updateLocalTank();
+
+        let deltatime = clock.getDelta();
+
+        updateLocalTank(deltatime);
         for(let id in tanks) {
-            tanks[id].update();
+            tanks[id].update(deltatime);
         }
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
@@ -311,6 +350,7 @@ $(() => {
                     me = msg.id;
                     console.log("Connected as " + me);
                     loadMap(msg.map);
+                    localTank = new Tank(0, new Team(0xFF0000));
                     break;
             }
         };
