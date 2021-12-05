@@ -75,37 +75,49 @@ $(() => {
         }
 
         update(deltatime) {
-            // Calculate base angle tweening
-            //console.log(Math.abs(Math.abs(this.desiredBaseAngle) - Math.abs(this.baseAngle)));
-
-            if (this.desiredBaseAngle != this.baseAngle) {
-
-                if(this.desiredBaseAngle < 0) {
-                    this.desiredBaseAngle += 2 * Math.PI;
+            // Regulate the variables to an acceptable range
+            let normalizeAngle = (angle) => {
+                if (angle < 0) {
+                    angle += 2 * Math.PI;
+                } else if (angle >= 2 * Math.PI) {
+                    angle -= 2 * Math.PI;
                 }
+                return angle;
+            };
 
-                if(this.baseAngle < 0) {
-                    this.baseAngle += 2 * Math.PI;
-                }
+            this.desiredBaseAngle = normalizeAngle(this.desiredBaseAngle);
+            this.baseAngle = normalizeAngle(this.baseAngle);
 
-                //console.log(this.desiredBaseAngle);
-                let min_distance_plus  = [
+            if (Math.abs(this.desiredBaseAngle % Math.PI - this.baseAngle % Math.PI) != 0) {
+                console.log("Changing base angle. " + this.desiredBaseAngle % Math.PI + " " + this.baseAngle % Math.PI);
+
+                // Determine the offset needed to reach the angle that appears closest
+                // All items in the array are angles for an end of the tank.
+                let possible_near = [
+                    this.baseAngle - (Math.PI * 2),
+                    this.baseAngle - Math.PI,
                     this.baseAngle,
                     this.baseAngle + Math.PI,
-                    this.baseAngle + 2*Math.PI].map((rad) => {
-                        return [rad, rad - this.desiredBaseAngle];
-                    }).reduce((x, min) => Math.abs(x[1]) < Math.abs(min[1]) ? x : min);
+                    this.baseAngle + (Math.PI * 2)
+                ].reduce((min, rad) => {
+                    // Determine the minimum distance to an end of the tank
+                    return Math.abs(min) < Math.abs(this.desiredBaseAngle - rad) ? min : this.desiredBaseAngle - rad;
+                }, 1000000);
 
-                console.log(min_distance);
+                // Changes how fast the tank appears to turn (cosmetic only)
+                const TURN_SPEED = 2 * Math.PI;
 
-                if (min_distance[1] < 0) {
-                    this.baseAngle += 3 * Math.PI * deltatime;
-
-                    if(this.baseAngle > this.desiredBaseAngle) this.baseAngle = min_distance[0];
+                if (Math.abs(possible_near) <= TURN_SPEED * deltatime) {
+                    // Jump immediately to the desired angle if going to overshoot
+                    this.baseAngle += possible_near;
                 } else {
-                    this.baseAngle -= 3 * Math.PI * deltatime;
-
-                    if(this.baseAngle < this.desiredBaseAngle) this.baseAngle = min_distance[0];
+                    // Move at the turning speed in the correct direction to approach
+                    // the desired angle
+                    if(possible_near < 0) {
+                        this.baseAngle -= TURN_SPEED * deltatime;
+                    } else {
+                        this.baseAngle += TURN_SPEED * deltatime;
+                    }
                 }
             }
 
