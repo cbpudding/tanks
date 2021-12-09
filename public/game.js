@@ -79,51 +79,7 @@ $(() => {
             scene.remove(this.cannon);
         }
 
-        update(deltatime) {
-            // Regulate the variables to an acceptable range
-            let normalizeAngle = (angle) => {
-                if (angle < 0) {
-                    angle += 2 * Math.PI;
-                } else if (angle >= 2 * Math.PI) {
-                    angle -= 2 * Math.PI;
-                }
-                return angle;
-            };
-
-            this.desiredBaseAngle = normalizeAngle(this.desiredBaseAngle);
-            this.baseAngle = normalizeAngle(this.baseAngle);
-
-            if (Math.abs(this.desiredBaseAngle % Math.PI - this.baseAngle % Math.PI) != 0) {
-                // Determine the offset needed to reach the angle that appears closest
-                // All items in the array are angles for an end of the tank.
-                let possible_near = [
-                    this.baseAngle - (Math.PI * 2),
-                    this.baseAngle - Math.PI,
-                    this.baseAngle,
-                    this.baseAngle + Math.PI,
-                    this.baseAngle + (Math.PI * 2)
-                ].reduce((min, rad) => {
-                    // Determine the minimum distance to an end of the tank
-                    return Math.abs(min) < Math.abs(this.desiredBaseAngle - rad) ? min : this.desiredBaseAngle - rad;
-                }, 1000000);
-
-                // Changes how fast the tank appears to turn (cosmetic only)
-                const TURN_SPEED = 2 * Math.PI;
-
-                if (Math.abs(possible_near) <= TURN_SPEED * deltatime) {
-                    // Jump immediately to the desired angle if going to overshoot
-                    this.baseAngle += possible_near;
-                } else {
-                    // Move at the turning speed in the correct direction to approach
-                    // the desired angle
-                    if(possible_near < 0) {
-                        this.baseAngle -= TURN_SPEED * deltatime;
-                    } else {
-                        this.baseAngle += TURN_SPEED * deltatime;
-                    }
-                }
-            }
-
+        update(_deltatime) {
             this.base.position.x = this.x;
             this.base.position.z = this.y;
             this.base.rotation.y = this.baseAngle;
@@ -240,6 +196,50 @@ $(() => {
             localTank.x += direction.x * 2 * deltatime;
             localTank.y -= direction.y * 2 * deltatime;
             setCameraPosition(localTank.x, localTank.y);
+
+            // Regulate the variables to an acceptable range
+            let normalizeAngle = (angle) => {
+                if (angle < 0) {
+                    angle += 2 * Math.PI;
+                } else if (angle >= 2 * Math.PI) {
+                    angle -= 2 * Math.PI;
+                }
+                return angle;
+            };
+
+            localTank.desiredBaseAngle = normalizeAngle(localTank.desiredBaseAngle);
+            localTank.baseAngle = normalizeAngle(localTank.baseAngle);
+
+            if (Math.abs(localTank.desiredBaseAngle % Math.PI - localTank.baseAngle % Math.PI) != 0) {
+                // Determine the offset needed to reach the angle that appears closest
+                // All items in the array are angles for an end of the tank.
+                let possible_near = [
+                    localTank.baseAngle - (Math.PI * 2),
+                    localTank.baseAngle - Math.PI,
+                    localTank.baseAngle,
+                    localTank.baseAngle + Math.PI,
+                    localTank.baseAngle + (Math.PI * 2)
+                ].reduce((min, rad) => {
+                    // Determine the minimum distance to an end of the tank
+                    return Math.abs(min) < Math.abs(localTank.desiredBaseAngle - rad) ? min : localTank.desiredBaseAngle - rad;
+                }, 1000000);
+
+                // Changes how fast the tank appears to turn (cosmetic only)
+                const TURN_SPEED = 2 * Math.PI;
+
+                if (Math.abs(possible_near) <= TURN_SPEED * deltatime) {
+                    // Jump immediately to the desired angle if going to overshoot
+                    localTank.baseAngle += possible_near;
+                } else {
+                    // Move at the turning speed in the correct direction to approach
+                    // the desired angle
+                    if(possible_near < 0) {
+                        localTank.baseAngle -= TURN_SPEED * deltatime;
+                    } else {
+                        localTank.baseAngle += TURN_SPEED * deltatime;
+                    }
+                }
+            }
         }
     }
 
