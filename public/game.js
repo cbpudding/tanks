@@ -74,6 +74,11 @@ $(() => {
             tanks[id] = this;
         }
 
+        delete() {
+            scene.remove(this.base);
+            scene.remove(this.cannon);
+        }
+
         update(deltatime) {
             // Regulate the variables to an acceptable range
             let normalizeAngle = (angle) => {
@@ -89,8 +94,6 @@ $(() => {
             this.baseAngle = normalizeAngle(this.baseAngle);
 
             if (Math.abs(this.desiredBaseAngle % Math.PI - this.baseAngle % Math.PI) != 0) {
-                console.log("Changing base angle. " + this.desiredBaseAngle % Math.PI + " " + this.baseAngle % Math.PI);
-
                 // Determine the offset needed to reach the angle that appears closest
                 // All items in the array are angles for an end of the tank.
                 let possible_near = [
@@ -240,6 +243,12 @@ $(() => {
         }
     }
 
+    function joinGame() {
+        $("#menu").hide();
+        let name = $("#nickname").val() || "Anonymous";
+        websock.send(JSON.stringify({type: 3, name}));
+    }
+
     function loadMap(path) {
         if(currentMap) {
             // TODO: Unload the existing map
@@ -356,20 +365,46 @@ $(() => {
             switch(msg.type) {
                 case 0:
                     let challenge = msg.challenge;
-                    websock.send(JSON.stringify({type: 1, challenge}));
+                    let payload = {type: 1, challenge};
+                    if(localTank) {
+                        payload.base = localTank.baseAngle;
+                        payload.cannon = localTank.cannonAngle;
+                        payload.x = localTank.x;
+                        payload.y = localTank.y;
+                    }
+                    websock.send(JSON.stringify(payload));
+                    for(let id in msg.tanks) {
+                        if(id != me) {
+                            if(!tanks[id]) {
+                                new Tank(id, teams.green);
+                            }
+                            tanks[id].baseAngle = msg.tanks[id].base;
+                            tanks[id].cannonAngle = msg.tanks[id].cannon;
+                            tanks[id].x = msg.tanks[id].x;
+                            tanks[id].y = msg.tanks[id].y;
+                        } else if(!localTank) {
+                            localTank = new Tank(id, teams.red);
+                        }
+                    }
                     break;
                 case 2:
                     me = msg.id;
                     console.log("Connected as " + me);
                     loadMap(msg.map);
-                    localTank = new Tank(0, new Team(0xFF0000));
                     break;
+                case 4:
+                    if(msg.id == me) {
+                        localTank = null;
+                    }
+                    tanks[msg.id].delete();
+                    delete tanks[msg.id];
             }
         };
 
         renderScene();
     }).catch(error => console.error);
 
+    $("#play").on("click", joinGame);
     $(window).on("keydown", event => updateKey(event.code, true));
     $(window).on("keyup", event => updateKey(event.code, false));
     $(window).on("mousemove", pointCannonAtMouse);

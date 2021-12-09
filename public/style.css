@@ -59,6 +59,7 @@
 }
 
 #settings {
+    display: none;
     height: 50%;
     left: 0;
     position: absolute;
