@@ -64,6 +64,7 @@ $(() => {
             this.cannon = models.cannon.clone();
             this.cannonAngle = 0; // Y rotation
             this.desiredBaseAngle = 0;
+            this.direction = {x: 0, y: 0}; // Used for movement prediction
             this.team = team;
             this.x = 0; // 3D coordinate X
             this.y = 0; // 3D coordinate Z
@@ -243,6 +244,11 @@ $(() => {
         }
     }
 
+    function updateExternalTank(id, deltatime) {
+        tanks[id].x += tanks[id].direction.x * 2 * deltatime;
+        tanks[id].y -= tanks[id].direction.y * 2 * deltatime;
+    }
+
     function joinGame() {
         $("#menu").hide();
         let name = $("#nickname").val() || "Anonymous";
@@ -292,6 +298,10 @@ $(() => {
         updateLocalTank(deltatime);
         for(let id in tanks) {
             tanks[id].update(deltatime);
+
+            if (tanks[id] != localTank) {
+                updateExternalTank(id, deltatime);
+            }
         }
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
@@ -368,6 +378,7 @@ $(() => {
                     let payload = {type: 1, challenge};
                     if(localTank) {
                         payload.base = localTank.baseAngle;
+                        payload.direction = direction;
                         payload.cannon = localTank.cannonAngle;
                         payload.x = localTank.x;
                         payload.y = localTank.y;
@@ -378,6 +389,7 @@ $(() => {
                             if(!tanks[id]) {
                                 new Tank(id, teams.green);
                             }
+                            tanks[id].direction = msg.tanks[id].direction;
                             tanks[id].baseAngle = msg.tanks[id].base;
                             tanks[id].cannonAngle = msg.tanks[id].cannon;
                             tanks[id].x = msg.tanks[id].x;

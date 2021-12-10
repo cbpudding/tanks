@@ -28,6 +28,7 @@ wss.on("connection", conn => {
     conn.name = "Unknown";
     conn.x = 0;
     conn.y = 0;
+    conn.direction = {x: 0, y: 0};
 
     conn.on("message", data => {
         try {
@@ -46,6 +47,7 @@ wss.on("connection", conn => {
                                             conn.cannon = msg.cannon;
                                             conn.x = msg.x;
                                             conn.y = msg.y;
+                                            conn.direction = msg.direction;
                                         }
                                     }
                                 }
@@ -83,7 +85,8 @@ function gameTick() {
                 cannon: client.cannon,
                 name: client.name,
                 x: client.x,
-                y: client.y
+                y: client.y,
+                direction: client.direction
             };
         }
     });
