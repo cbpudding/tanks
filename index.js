@@ -135,7 +135,6 @@ wss.on("connection", conn => {
                             }
                             
                             conn.alive = true;
-                            console.log(team);
                         }
                         break;
                     case 5:

@@ -10,11 +10,13 @@
 
 $(() => {
     const canvas = $("#display")[0];
+    const textMeasurer = document.createElement("canvas").getContext("2d");
     const clock = new THREE.Clock();
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 128);
     const renderer = new THREE.WebGLRenderer({canvas});
     const gltfLoader = new THREE.GLTFLoader();
+
     var websock = null;
 
     class Bullet {
@@ -114,13 +116,27 @@ $(() => {
     }
 
     class Tank {
-        constructor(id, team) {
+        constructor(id, name, team) {
             this.base = models.base.clone();
             this.baseAngle = 0; // Y rotation
             this.cannon = models.cannon.clone();
             this.cannonAngle = 0; // Y rotation
             this.desiredBaseAngle = 0;
             this.direction = {x: 0, y: 0}; // Used for movement prediction
+
+            // Create name geometry
+            if (name != "") {
+                this.name = document.createElement('p');
+                this.name.style.width = "5em";
+                this.name.innerText = name;
+                this.name.style["z-index"] = 1;
+                this.name.style.position = "absolute";
+                this.name.style.font = "15px roboto";
+                //this.name.fontSize = "10";
+
+                document.body.appendChild(this.name);
+            }
+
             this.team = team;
             this.x = 0; // 3D coordinate X
             this.y = 0; // 3D coordinate Z
@@ -132,6 +148,9 @@ $(() => {
         }
 
         delete() {
+            if(this.name) {
+                this.name.remove();
+            }
             scene.remove(this.base);
             scene.remove(this.cannon);
         }
@@ -143,6 +162,19 @@ $(() => {
             this.cannon.position.x = this.x;
             this.cannon.position.z = this.y;
             this.cannon.rotation.y = this.cannonAngle;
+
+            if(this.name) {
+                camera.updateMatrixWorld();
+                let vector = new THREE.Vector3(this.x, 1.2, this.y).project(camera);
+                vector.x = (vector.x + 1)/2 * window.innerWidth;
+                vector.y = -(vector.y - 1)/2 * window.innerHeight;
+
+                textMeasurer.font = "15px Roboto";
+                let width = textMeasurer.measureText(this.name.innerText).width / 2;
+
+                this.name.style.left = vector.x - width + "px";
+                this.name.style.top = vector.y + "px";
+            }
         }
     }
 
@@ -220,6 +252,7 @@ $(() => {
     var currentMap = null;
     var desiredAngle = 0;
     var direction = {x: 0, y: 0};
+    const fonts = {};
     var localTank = null;
     var me = null;
     const models = {};
@@ -459,7 +492,7 @@ $(() => {
         loadModel("bullet", "models/projectile.glb"),
         loadModel("wall", "models/rockwall.glb"),
         loadModel("base", "models/tank_bottom.glb"),
-        loadModel("cannon", "models/tank_top.glb")
+        loadModel("cannon", "models/tank_top.glb"),
     ]).then(() => {
         websock = new WebSocket("ws://" + location.hostname + ":3000/");
 
@@ -480,7 +513,7 @@ $(() => {
                     for(let id in msg.tanks) {
                         if(id != me || !localTank) {
                             if(!tanks[id]) {
-                                let tank = new Tank(id, teams[msg.tanks[id].team]);
+                                let tank = new Tank(id, msg.tanks[id].name, teams[msg.tanks[id].team]);
                                 if(!localTank && id == me) {
                                     localTank = tank;
                                 }
