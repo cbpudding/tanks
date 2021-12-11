@@ -16,6 +16,7 @@ const bullets = {};
 // Load in the maps for server-side collision checks
 let available_maps = ["maps/bigmap.csv"];
 let maps = {};
+var team = 0;
 
 for (let map of available_maps) {
     maps[map] = [];
@@ -32,6 +33,7 @@ for (let map of available_maps) {
             if (id < 0) {
                 id = 0
             }
+            // TODO: Locate team spawns and store the coordinates to each in a list for each team.
             temp.push(id);
         }
         let padding = (read_map[0].length + 2) - temp.length;
@@ -59,12 +61,13 @@ wss.on("connection", conn => {
     conn.base = 0;
     conn.bullets = 7;
     conn.challenge = Math.floor(Math.random() * 1000);
+    conn.direction = {x: 0, y: 0};
     conn.id = Uuid.v4();
     conn.last = Date.now();
     conn.name = "Unknown";
+    conn.team = "unassigned";
     conn.x = 0;
     conn.y = 0;
-    conn.direction = {x: 0, y: 0};
 
     conn.on("message", data => {
         try {
@@ -113,10 +116,18 @@ wss.on("connection", conn => {
                     case 3:
                         if(typeof msg.name === "string") {
                             conn.name = msg.name;
-                            conn.alive = true;
                             conn.bullets = 7;
                             conn.x = 4;
                             conn.y = -2;
+                            if(team >= 0) {
+                                conn.team = "red";
+                                team--;
+                            } else {
+                                conn.team = "green";
+                                team++;
+                            }
+                            conn.alive = true;
+                            console.log(team);
                         }
                         break;
                     case 5:
@@ -145,6 +156,14 @@ wss.on("connection", conn => {
     });
 
     conn.on("close", () => {
+        switch(conn.team) {
+            case "green":
+                team--;
+                break;
+            case "red":
+                team++;
+                break;
+        }
         wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 4, id: conn.id}));
         });
@@ -173,7 +192,8 @@ function gameTick() {
                 name: client.name,
                 x: client.x,
                 y: client.y,
-                direction: client.direction
+                direction: client.direction,
+                team: client.team
             };
         }
     });
@@ -196,7 +216,7 @@ function gameTick() {
             for(let other in bullets) {
                 if(id != other) {
                     let distance = Math.sqrt(Math.pow(bullets[id].x - bullets[other].x, 2) + Math.pow(bullets[id].y - bullets[other].y, 2));
-                    if(distance < 0.03) {
+                    if(distance < 0.3) {
                         destroyBullet(id);
                         destroyBullet(other);
                         break;
@@ -209,6 +229,14 @@ function gameTick() {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.6) {
                             destroyBullet(id);
+                            switch(tank.team) {
+                                case "green":
+                                    team--;
+                                    break;
+                                case "red":
+                                    team++;
+                                    break;
+                            }
                             wss.clients.forEach(client => {
                                 if(client.id == tank.id) {
                                     client.alive = false;
@@ -253,7 +281,6 @@ function gameTick() {
 
                     bullets[id].x += dx * 0.0625;
                     bullets[id].y -= dy * 0.0625;
-                    //bullets[id].x = 1;
 
                     if (did_reflect) {
                         if (!bullets[id].ricochet) {
@@ -276,6 +303,14 @@ setInterval(() => {
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
             if(now - client.last > 2000) {
+                switch(client.team) {
+                    case "green":
+                        team--;
+                        break;
+                    case "red":
+                        team++;
+                        break;
+                }
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
                         player.send(JSON.stringify({type: 4, id: client.id}));

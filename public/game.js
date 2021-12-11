@@ -326,6 +326,7 @@ $(() => {
 
     function joinGame() {
         $("#menu").hide();
+        $("#nickname").blur();
         let name = $("#nickname").val() || "Anonymous";
         localStorage.nickname = name;
         websock.send(JSON.stringify({type: 3, name}));
@@ -473,19 +474,18 @@ $(() => {
                     }
                     websock.send(JSON.stringify(payload));
                     for(let id in msg.tanks) {
-                        if(id != me) {
+                        if(id != me || !localTank) {
                             if(!tanks[id]) {
-                                new Tank(id, teams.green);
+                                let tank = new Tank(id, teams[msg.tanks[id].team]);
+                                if(!localTank && id == me) {
+                                    localTank = tank;
+                                }
                             }
                             tanks[id].direction = msg.tanks[id].direction;
                             tanks[id].baseAngle = msg.tanks[id].base;
                             tanks[id].cannonAngle = msg.tanks[id].cannon;
                             tanks[id].x = msg.tanks[id].x;
                             tanks[id].y = msg.tanks[id].y;
-                        } else if(!localTank) {
-                            localTank = new Tank(id, teams.red);
-                            localTank.x = 4;
-                            localTank.y = -2;
                         }
                     }
 
