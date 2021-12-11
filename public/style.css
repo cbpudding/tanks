@@ -1,4 +1,14 @@
 @font-face {
+    font-family: OpenDyslexic;
+    src: url("/fonts/OpenDyslexic-Regular.otf");
+}
+
+@font-face {
+    font-family: OpenSans;
+    src: url("/fonts/OpenSans-Regular.ttf");
+}
+
+@font-face {
     font-family: SigmarOne;
     src: url("/fonts/SigmarOne-Regular.ttf");
 }
@@ -11,6 +21,7 @@
     padding-bottom: 0.5em;
     padding-top: 0;
     text-align: center;
+    user-select: none;
 }
 
 #display {
@@ -38,6 +49,20 @@
     position: absolute;
     top: 0;
     width: 100%;
+    z-index: 2;
+}
+
+#nametags {
+    font-family: "OpenSans", sans-serif;
+    font-size: 16px;
+    height: 100%;
+    left: 0;
+    overflow: hidden;
+    position: absolute;
+    text-shadow: -1px -1px 5px white, -1px 1px 5px white, 1px 1px 5px white, 1px -1px 5px white;
+    top: 0;
+    user-select: none;
+    width: 100%;
     z-index: 1;
 }
 
@@ -45,15 +70,6 @@
     display: block;
     margin-left: auto;
     margin-right: auto;
-    text-align: center;
-    width: 15em;
-}
-
-#roomcode {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-top: 1em;
     text-align: center;
     width: 15em;
 }
@@ -75,6 +91,7 @@
     padding-top: 1em;
     margin: 0;
     text-align: center;
+    user-select: none;
 }
 
 button {

@@ -122,19 +122,21 @@ wss.on("connection", conn => {
                         break;
                     case 3:
                         if(typeof msg.name === "string") {
-                            conn.name = msg.name;
-                            conn.bullets = 7;
-                            conn.x = 4;
-                            conn.y = -2;
-                            if(team >= 0) {
-                                conn.team = "red";
-                                team--;
-                            } else {
-                                conn.team = "green";
-                                team++;
+                            if(msg.name.length <= 32) {
+                                conn.name = msg.name;
+                                conn.bullets = 7;
+                                conn.x = 4;
+                                conn.y = -2;
+                                if(team >= 0) {
+                                    conn.team = "red";
+                                    team--;
+                                } else {
+                                    conn.team = "green";
+                                    team++;
+                                }
+                                console.log(team);
+                                conn.alive = true;
                             }
-                            
-                            conn.alive = true;
                         }
                         break;
                     case 5:
@@ -163,14 +165,17 @@ wss.on("connection", conn => {
     });
 
     conn.on("close", () => {
-        switch(conn.team) {
-            case "green":
-                team--;
-                break;
-            case "red":
-                team++;
-                break;
+        if(conn.alive) {
+            switch(conn.team) {
+                case "green":
+                    team--;
+                    break;
+                case "red":
+                    team++;
+                    break;
+            }
         }
+        console.log(team);
         wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 4, id: conn.id}));
         });
@@ -244,6 +249,7 @@ function gameTick() {
                                     team++;
                                     break;
                             }
+                            console.log(team);
                             
                             wss.clients.forEach(client => {
                                 if(client.id == tank.id) {
@@ -311,15 +317,17 @@ setInterval(() => {
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
             if(now - client.last > 2000) {
-                switch(client.team) {
-                    case "green":
-                        team--;
-                        break;
-                    case "red":
-                        team++;
-                        break;
+                if(client.alive) {
+                    switch(client.team) {
+                        case "green":
+                            team--;
+                            break;
+                        case "red":
+                            team++;
+                            break;
+                    }
                 }
-                
+                console.log(team);
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
                         player.send(JSON.stringify({type: 4, id: client.id}));

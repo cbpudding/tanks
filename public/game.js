@@ -127,14 +127,10 @@ $(() => {
             // Create name geometry
             if (name != "") {
                 this.name = document.createElement('p');
-                this.name.style.width = "5em";
                 this.name.innerText = name;
-                this.name.style["z-index"] = 1;
                 this.name.style.position = "absolute";
-                this.name.style.font = "15px roboto";
-                //this.name.fontSize = "10";
-
-                document.body.appendChild(this.name);
+                this.name.style.font = "16px OpenSans";
+                $("#nametags").append(this.name);
             }
 
             this.team = team;
@@ -165,11 +161,11 @@ $(() => {
 
             if(this.name) {
                 camera.updateMatrixWorld();
-                let vector = new THREE.Vector3(this.x, 1.2, this.y).project(camera);
-                vector.x = (vector.x + 1)/2 * window.innerWidth;
-                vector.y = -(vector.y - 1)/2 * window.innerHeight;
+                let vector = new THREE.Vector3(this.x, 1.5, this.y).project(camera);
+                vector.x = (vector.x + 1) / 2 * window.innerWidth;
+                vector.y = -(vector.y - 1) / 2 * window.innerHeight;
 
-                textMeasurer.font = "15px Roboto";
+                textMeasurer.font = "16px OpenSans";
                 let width = textMeasurer.measureText(this.name.innerText).width / 2;
 
                 this.name.style.left = vector.x - width + "px";
@@ -252,7 +248,6 @@ $(() => {
     var currentMap = null;
     var desiredAngle = 0;
     var direction = {x: 0, y: 0};
-    const fonts = {};
     var localTank = null;
     var me = null;
     const models = {};
