@@ -96,6 +96,8 @@ wss.on("connection", conn => {
                                                 }
                                             }
 
+                                            // TODO: Sanity check the coords to be within
+                                            // bounds
                                             if (!has_collided) {
                                                 if(Math.abs(conn.x - msg.x) <= 3 && Math.abs(conn.y - msg.y) <= 3) {
                                                     conn.x = msg.x;
@@ -194,7 +196,7 @@ function gameTick() {
             for(let other in bullets) {
                 if(id != other) {
                     let distance = Math.sqrt(Math.pow(bullets[id].x - bullets[other].x, 2) + Math.pow(bullets[id].y - bullets[other].y, 2));
-                    if(distance < 0.15) {
+                    if(distance < 0.03) {
                         destroyBullet(id);
                         destroyBullet(other);
                         break;
@@ -217,10 +219,49 @@ function gameTick() {
                     }
                 });
                 if(bullets[id]) {
+                    let check_collision = (x, y) => {
+                        for(let check_x = Math.floor(x - 0.01); check_x <= Math.floor(x + 0.01); check_x++) {
+                            for(let check_y = -Math.ceil(y + 0.01); check_y <= -Math.ceil(y - 0.01); check_y++) {
+                                switch(maps["maps/bigmap.csv"][check_x][check_y]) {
+                                    case 1:
+                                    case 2:
+                                        return true;
+                                }
+                            }
+                        }
+                        return false;
+                    };
+
                     let dx = Math.cos(bullets[id].rot);
                     let dy = Math.sin(bullets[id].rot);
+
+                    // TODO: Sanity check on the coordinates
+                    // Auto-delete if outside of map
+
+                    let did_reflect = false;
+                    if (check_collision(bullets[id].x + 0.5 + (dx * 0.0625), bullets[id].y - 0.5)) {
+                        // Flip x
+                        bullets[id].rot = Math.PI - bullets[id].rot;
+                        dx = -dx;
+                        did_reflect = true;
+                    }
+                    if (check_collision(bullets[id].x + 0.5, bullets[id].y - (dy * 0.0625) - 0.5)) {
+                        bullets[id].rot = -bullets[id].rot;
+                        dy = -dy;
+                        did_reflect = true;
+                    }
+
                     bullets[id].x += dx * 0.0625;
                     bullets[id].y -= dy * 0.0625;
+                    //bullets[id].x = 1;
+
+                    if (did_reflect) {
+                        if (!bullets[id].ricochet) {
+                            destroyBullet(id);
+                        } else {
+                            bullets[id].ricochet = false;
+                        }
+                    }
                 }
             }
         }

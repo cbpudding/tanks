@@ -20,6 +20,7 @@ $(() => {
     class Bullet {
         constructor(id, x, y) {
             this.model = models.bullet.clone();
+            this.model.scale.set(2, 2, 2);
             scene.add(this.model);
             this.rotation = 0;
             this.x = x;
@@ -32,7 +33,13 @@ $(() => {
             scene.remove(this.model);
         }
 
-        update(_deltatime) {
+        update(deltatime) {
+            let dx = Math.cos(this.rotation);
+            let dy = Math.sin(this.rotation);
+
+            this.x += dx * (3.676470588 * deltatime);
+            this.y -= dy * (3.676470588 * deltatime);
+
             this.model.position.x = this.x;
             this.model.position.z = this.y;
             this.model.rotation.y = this.rotation;
