@@ -327,6 +327,7 @@ $(() => {
     function joinGame() {
         $("#menu").hide();
         let name = $("#nickname").val() || "Anonymous";
+        localStorage.nickname = name;
         websock.send(JSON.stringify({type: 3, name}));
     }
 
@@ -520,10 +521,18 @@ $(() => {
         renderScene();
     }).catch(error => console.error);
 
+    $("#nickname").keydown(event => {
+        if(event.code == "Enter") {
+            joinGame();
+        }
+    });
     $("#play").on("click", joinGame);
     $(window).on("mousedown", shoot);
     $(window).on("keydown", event => updateKey(event.code, true));
     $(window).on("keyup", event => updateKey(event.code, false));
     $(window).on("mousemove", pointCannonAtMouse);
     $(window).on("resize", scaleDisplay);
+
+    $("#nickname").val(localStorage.nickname || "");
+    $("#nickname").focus();
 });
