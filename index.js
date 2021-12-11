@@ -1,14 +1,45 @@
 const Express = require("express");
+const Filesystem = require("fs");
 const Uuid = require("uuid");
 const WebSocket = require("ws");
 
 const app = Express();
 
-app.get("/", (req, res) => {
+app.get("/", (_req, res) => {
     res.sendFile(__dirname + "/public/index.htm");
 });
 
 app.use(Express.static(__dirname + "/public"));
+
+// Load in the maps for server-side collision checks
+let available_maps = ["maps/bigmap.csv"];
+let maps = {};
+
+for (let map of available_maps) {
+    maps[map] = [];
+    let read_map = Filesystem.readFileSync("public/" + map, {encoding:'utf8', flag:'r'})
+        .trim()
+        .split(/\r?\n/)
+        .map(x => x.split(","));
+    // Map borders
+    maps[map].push(Array(read_map[0].length + 2).fill(2));
+    for (let row of read_map) {
+        let temp = [2];
+        for (let tile of row) {
+            let id = parseInt(tile, 10) || 0;
+            if (id < 0) {
+                id = 0
+            }
+            temp.push(id);
+        }
+        let padding = (read_map[0].length + 2) - temp.length;
+        temp = temp.concat(Array(padding).fill(2));
+        maps[map].push(temp);
+    }
+    maps[map].push(Array(read_map[0].length + 2).fill(2));
+}
+
+console.log("Loaded maps: " + Object.keys(maps).join(", "));
 
 const wss = new WebSocket.Server({server: app.listen(3000)});
 
@@ -26,8 +57,8 @@ wss.on("connection", conn => {
     conn.id = Uuid.v4();
     conn.last = Date.now();
     conn.name = "Unknown";
-    conn.x = 0;
-    conn.y = 0;
+    conn.x = 4;
+    conn.y = -2;
     conn.direction = {x: 0, y: 0};
 
     conn.on("message", data => {
@@ -45,9 +76,25 @@ wss.on("connection", conn => {
                                         if(typeof msg.cannon === "number") {
                                             conn.base = msg.base;
                                             conn.cannon = msg.cannon;
-                                            conn.x = msg.x;
-                                            conn.y = msg.y;
                                             conn.direction = msg.direction;
+
+                                            // Test collision
+                                            let has_collided = false;
+                                            for(let check_x = Math.floor(msg.x); check_x <= Math.floor(msg.x + 0.95); check_x++) {
+                                                for(let check_y = -Math.ceil(msg.y); check_y <= -Math.ceil(msg.y - 0.95); check_y++) {
+                                                    switch(maps["maps/bigmap.csv"][check_x][check_y]) {
+                                                    case 1:
+                                                    case 2:
+                                                    case 3:
+                                                        has_collided = true;
+                                                    }
+                                                }
+                                            }
+
+                                            if (!has_collided) {
+                                                conn.x = msg.x;
+                                                conn.y = msg.y;
+                                            }
                                         }
                                     }
                                 }

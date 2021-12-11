@@ -55,6 +55,33 @@ $(() => {
                 setCameraPosition((this.width / 2) - 0.5, (this.height / -2) + 0.5);
             });
         }
+
+        // Returns if a collision is occuring
+        // IMPORTANT: 0 = none, 1 = colliding with wall (Takes priority over 2), 2 = colliding with hole
+        isColliding(collider_size /* square, side length */, x, y) {
+            let x_min = Math.floor(x);
+            let x_max = Math.floor(x + collider_size);
+            let y_min = -Math.ceil(y);
+            let y_max = -Math.ceil(y - collider_size);
+
+            let is_hole = 0;
+            console.log("cxmin: " + x_min + " cxmax: " + x_max);
+            console.log("cymin: " + y_min + " cymax: " + y_max);
+            for(let check_x = x_min; check_x <= x_max; check_x++) {
+                for(let check_y = y_min; check_y <= y_max; check_y++) {
+                    switch(this.tiles[check_x][check_y].canCollide()) {
+                    case 1:
+                        console.log(1);
+                        return 1;
+                    case 2:
+                        is_hole = 2; // Because it is overwritten by wall if found
+                    }
+                }
+            }
+
+            console.log(is_hole);
+            return is_hole;
+        }
     }
 
     class Tank {
@@ -140,6 +167,18 @@ $(() => {
                 console.warn("ID " + this.id + " has no physical representation!");
             }
         }
+
+        canCollide() {
+            switch(this.id) {
+                case 1:
+                case 2:
+                    return 1;
+                case 3:
+                    return 2;
+                default:
+                return 0;
+            }
+        }
     }
 
     const buttons = {
@@ -194,8 +233,13 @@ $(() => {
             }
             localTank.desiredBaseAngle = desiredAngle;
 
-            localTank.x += direction.x * 2 * deltatime;
-            localTank.y -= direction.y * 2 * deltatime;
+            // Move tank (and test collision)
+            if (currentMap.isColliding(0.95, localTank.x + (direction.x * 2 * deltatime), localTank.y) == 0) {
+                localTank.x += direction.x * 2 * deltatime;
+            }
+            if (currentMap.isColliding(0.95, localTank.x, localTank.y - (direction.y * 2 * deltatime)) == 0) {
+                localTank.y -= direction.y * 2 * deltatime;
+            }
             setCameraPosition(localTank.x, localTank.y);
 
             // Regulate the variables to an acceptable range
@@ -245,8 +289,13 @@ $(() => {
     }
 
     function updateExternalTank(id, deltatime) {
-        tanks[id].x += tanks[id].direction.x * 2 * deltatime;
-        tanks[id].y -= tanks[id].direction.y * 2 * deltatime;
+        // Test collision and move external tank for somewhat-realistic predictive movement
+        if (currentMap.isColliding(0.95, tanks[id].x + (tanks[id].direction.x * 2 * deltatime), tanks[id].y) == 0) {
+            tanks[id].x += tanks[id].direction.x * 2 * deltatime;
+        }
+        if (currentMap.isColliding(0.95, tanks[id].x, tanks[id].y - (tanks[id].direction.y * 2 * deltatime)) == 0) {
+            tanks[id].y -= tanks[id].direction.y * 2 * deltatime;
+        }
     }
 
     function joinGame() {
@@ -396,6 +445,8 @@ $(() => {
                             tanks[id].y = msg.tanks[id].y;
                         } else if(!localTank) {
                             localTank = new Tank(id, teams.red);
+                            localTank.x = 4;
+                            localTank.y = -2;
                         }
                     }
                     break;
