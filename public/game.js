@@ -65,13 +65,10 @@ $(() => {
             let y_max = -Math.ceil(y - collider_size);
 
             let is_hole = 0;
-            console.log("cxmin: " + x_min + " cxmax: " + x_max);
-            console.log("cymin: " + y_min + " cymax: " + y_max);
             for(let check_x = x_min; check_x <= x_max; check_x++) {
                 for(let check_y = y_min; check_y <= y_max; check_y++) {
                     switch(this.tiles[check_x][check_y].canCollide()) {
                     case 1:
-                        console.log(1);
                         return 1;
                     case 2:
                         is_hole = 2; // Because it is overwritten by wall if found
@@ -79,7 +76,6 @@ $(() => {
                 }
             }
 
-            console.log(is_hole);
             return is_hole;
         }
     }
