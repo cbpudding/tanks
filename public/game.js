@@ -17,6 +17,28 @@ $(() => {
     const gltfLoader = new THREE.GLTFLoader();
     var websock = null;
 
+    class Bullet {
+        constructor(id, x, y) {
+            this.model = models.bullet.clone();
+            scene.add(this.model);
+            this.rotation = 0;
+            this.x = x;
+            this.y = y;
+
+            bullets[id] = this;
+        }
+
+        remove() {
+            scene.remove(this.model);
+        }
+
+        update(_deltatime) {
+            this.model.position.x = this.x;
+            this.model.position.z = this.y;
+            this.model.rotation.y = this.rotation;
+        }
+    }
+
     class Map {
         constructor(url) {
             $.get(url, data => {
@@ -177,6 +199,7 @@ $(() => {
         }
     }
 
+    const bullets = {};
     const buttons = {
         down: false,
         left: false,
@@ -348,6 +371,9 @@ $(() => {
                 updateExternalTank(id, deltatime);
             }
         }
+        for(let id in bullets) {
+            bullets[id].update(deltatime);
+        }
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
     }
@@ -361,6 +387,15 @@ $(() => {
     function setCameraPosition(x, y) {
         camera.position.x = x;
         camera.position.z = y + 16;
+    }
+
+    function shoot() {
+        if (localTank) {
+            websock.send(JSON.stringify({
+                    type: 5,
+                    rot: localTank.cannonAngle
+            }));
+        }
     }
 
     function updateKey(keycode, pressed) {
@@ -445,6 +480,16 @@ $(() => {
                             localTank.y = -2;
                         }
                     }
+
+                    for (let id in msg.bullets) {
+                        if(!bullets[id]) {
+                            new Bullet(id, msg.bullets[id].x, msg.bullets[id].y);
+                        }
+
+                        bullets[id].rotation = msg.bullets[id].rot;
+                        bullets[id].x = msg.bullets[id].x;
+                        bullets[id].y = msg.bullets[id].y;
+                    }
                     break;
                 case 2:
                     me = msg.id;
@@ -457,6 +502,9 @@ $(() => {
                     }
                     tanks[msg.id].delete();
                     delete tanks[msg.id];
+                case 5:
+                    bullets[msg.id].delete();
+                    delete bullets[msg.id];
             }
         };
 
@@ -464,6 +512,7 @@ $(() => {
     }).catch(error => console.error);
 
     $("#play").on("click", joinGame);
+    $(window).on("mousedown", shoot);
     $(window).on("keydown", event => updateKey(event.code, true));
     $(window).on("keyup", event => updateKey(event.code, false));
     $(window).on("mousemove", pointCannonAtMouse);
