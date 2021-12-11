@@ -28,7 +28,7 @@ $(() => {
             bullets[id] = this;
         }
 
-        remove() {
+        delete() {
             scene.remove(this.model);
         }
 
@@ -499,10 +499,12 @@ $(() => {
                 case 4:
                     if(msg.id == me) {
                         localTank = null;
+                        $("#menu").show();
                     }
                     tanks[msg.id].delete();
                     delete tanks[msg.id];
-                case 5:
+                    break;
+                case 6:
                     bullets[msg.id].delete();
                     delete bullets[msg.id];
             }

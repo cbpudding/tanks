@@ -57,12 +57,13 @@ Type 6 - Destroy bullet
 wss.on("connection", conn => {
     conn.alive = false;
     conn.base = 0;
+    conn.bullets = 7;
     conn.challenge = Math.floor(Math.random() * 1000);
     conn.id = Uuid.v4();
     conn.last = Date.now();
     conn.name = "Unknown";
-    conn.x = 4;
-    conn.y = -2;
+    conn.x = 0;
+    conn.y = 0;
     conn.direction = {x: 0, y: 0};
 
     conn.on("message", data => {
@@ -111,19 +112,27 @@ wss.on("connection", conn => {
                         if(typeof msg.name === "string") {
                             conn.name = msg.name;
                             conn.alive = true;
+                            conn.bullets = 7;
+                            conn.x = 4;
+                            conn.y = -2;
                         }
                         break;
                     case 5:
                         if(typeof msg.rot === "number") {
-                            const id = Uuid.v4();
-                            let x = conn.x + Math.cos(msg.rot);
-                            let y = conn.y - Math.sin(msg.rot);
-                            bullets[id] = {
-                                owner: conn.id,
-                                rot: msg.rot,
-                                x,
-                                y
-                            };
+                            if(conn.bullets > 0) {
+                                conn.bullets--;
+                                const id = Uuid.v4();
+                                let x = conn.x + Math.cos(msg.rot);
+                                let y = conn.y - Math.sin(msg.rot);
+                                bullets[id] = {
+                                    created: Date.now(),
+                                    owner: conn.id,
+                                    ricochet: true,
+                                    rot: msg.rot,
+                                    x,
+                                    y
+                                };
+                            }
                         }
                         break;
                 }
@@ -141,8 +150,18 @@ wss.on("connection", conn => {
     conn.send(JSON.stringify({type: 2, id: conn.id, map: "maps/bigmap.csv"}));
 });
 
+function destroyBullet(id) {
+    wss.clients.forEach(client => {
+        if(client.id == bullets[id].owner) {
+            client.bullets = Math.min(client.bullets + 1, 7);
+        }
+        client.send(JSON.stringify({type: 6, id}));
+    });
+    delete bullets[id];
+}
+
 function gameTick() {
-    let payload = {type: 0, tanks: {}, bullets};
+    let payload = {type: 0, tanks: {}, bullets: {}};
     let start = Date.now();
     wss.clients.forEach(client => {
         if(client.alive) {
@@ -156,12 +175,56 @@ function gameTick() {
             };
         }
     });
+    for(let id in bullets) {
+        payload.bullets[id] = {
+            rot: bullets[id].rot,
+            x: bullets[id].x,
+            y: bullets[id].y
+        };
+    }
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({challenge: client.challenge, ...payload}));
+            client.send(JSON.stringify({challenge: client.challenge, clip: client.bullets, ...payload}));
         }
     });
-    // TODO: Update bullets
+    for(let id in bullets) {
+        if(Date.now() - bullets[id].created > 10000) {
+            destroyBullet(id);
+        } else {
+            for(let other in bullets) {
+                if(id != other) {
+                    let distance = Math.sqrt(Math.pow(bullets[id].x - bullets[other].x, 2) + Math.pow(bullets[id].y - bullets[other].y, 2));
+                    if(distance < 0.15) {
+                        destroyBullet(id);
+                        destroyBullet(other);
+                        break;
+                    }
+                }
+            }
+            if(bullets[id]) {
+                wss.clients.forEach(tank => {
+                    if(bullets[id]) {
+                        let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
+                        if(distance < 0.6) {
+                            destroyBullet(id);
+                            wss.clients.forEach(client => {
+                                if(client.id == tank.id) {
+                                    client.alive = false;
+                                }
+                                client.send(JSON.stringify({type: 4, id: tank.id}));
+                            });
+                        }
+                    }
+                });
+                if(bullets[id]) {
+                    let dx = Math.cos(bullets[id].rot);
+                    let dy = Math.sin(bullets[id].rot);
+                    bullets[id].x += dx * 0.0625;
+                    bullets[id].y -= dy * 0.0625;
+                }
+            }
+        }
+    }
     setTimeout(gameTick, 17 - (Date.now() - start));
 }
 
