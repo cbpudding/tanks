@@ -11,6 +11,8 @@ app.get("/", (_req, res) => {
 
 app.use(Express.static(__dirname + "/public"));
 
+const bullets = {};
+
 // Load in the maps for server-side collision checks
 let available_maps = ["maps/bigmap.csv"];
 let maps = {};
@@ -49,6 +51,8 @@ Type 1 - Client update
 Type 2 - Server identification
 Type 3 - Spawn tank
 Type 4 - Destroy tank
+Type 5 - Shoot bullet
+Type 6 - Destroy bullet
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -92,8 +96,10 @@ wss.on("connection", conn => {
                                             }
 
                                             if (!has_collided) {
-                                                conn.x = msg.x;
-                                                conn.y = msg.y;
+                                                if(Math.abs(conn.x - msg.x) <= 3 && Math.abs(conn.y - msg.y) <= 3) {
+                                                    conn.x = msg.x;
+                                                    conn.y = msg.y;
+                                                }
                                             }
                                         }
                                     }
@@ -105,6 +111,19 @@ wss.on("connection", conn => {
                         if(typeof msg.name === "string") {
                             conn.name = msg.name;
                             conn.alive = true;
+                        }
+                        break;
+                    case 5:
+                        if(typeof msg.rot === "number") {
+                            const id = Uuid.v4();
+                            let x = conn.x + Math.cos(msg.rot);
+                            let y = conn.y - Math.sin(msg.rot);
+                            bullets[id] = {
+                                owner: conn.id,
+                                rot: msg.rot,
+                                x,
+                                y
+                            };
                         }
                         break;
                 }
@@ -123,7 +142,7 @@ wss.on("connection", conn => {
 });
 
 function gameTick() {
-    let payload = {type: 0, tanks: {}};
+    let payload = {type: 0, tanks: {}, bullets};
     let start = Date.now();
     wss.clients.forEach(client => {
         if(client.alive) {
@@ -142,6 +161,7 @@ function gameTick() {
             client.send(JSON.stringify({challenge: client.challenge, ...payload}));
         }
     });
+    // TODO: Update bullets
     setTimeout(gameTick, 17 - (Date.now() - start));
 }
 
