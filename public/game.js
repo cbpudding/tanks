@@ -100,7 +100,11 @@ $(() => {
                     case 1:
                         return 1;
                     case 2:
-                        is_hole = 2; // Because it is overwritten by wall if found
+                        // Check if within 0.475 units (overlapping hole)
+                        let dist = Math.sqrt((Math.pow(check_x - x, 2) + Math.pow(-check_y - y, 2)));
+                        if (dist <= 0.975 ) {
+                            is_hole = 2; // Because it is overwritten by a wall if found
+                        }
                     }
                 }
             }

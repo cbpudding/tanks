@@ -93,8 +93,15 @@ wss.on("connection", conn => {
                                                     switch(maps["maps/bigmap.csv"][check_x][check_y]) {
                                                     case 1:
                                                     case 2:
-                                                    case 3:
                                                         has_collided = true;
+                                                        break;
+                                                    case 3:
+                                                        let dist = Math.sqrt((Math.pow(check_x - msg.x, 2) + Math.pow(-check_y - msg.y, 2)));
+                                                        // Check if close enough to hole to collide
+                                                        if (dist <= 0.975) {
+                                                            has_collided = true;
+                                                        }
+                                                        break;
                                                     }
                                                 }
                                             }
@@ -126,6 +133,7 @@ wss.on("connection", conn => {
                                 conn.team = "green";
                                 team++;
                             }
+                            
                             conn.alive = true;
                             console.log(team);
                         }
@@ -225,7 +233,7 @@ function gameTick() {
             }
             if(bullets[id]) {
                 wss.clients.forEach(tank => {
-                    if(bullets[id]) {
+                    if(tank.alive && bullets[id]) {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.6) {
                             destroyBullet(id);
@@ -237,6 +245,7 @@ function gameTick() {
                                     team++;
                                     break;
                             }
+                            
                             wss.clients.forEach(client => {
                                 if(client.id == tank.id) {
                                     client.alive = false;
@@ -311,6 +320,7 @@ setInterval(() => {
                         team++;
                         break;
                 }
+                
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
                         player.send(JSON.stringify({type: 4, id: client.id}));
