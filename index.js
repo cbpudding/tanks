@@ -24,6 +24,7 @@ let spawns = {
     green: [],
     greenInc: 0
 };
+let presents = [];
 
 for (let map of available_maps) {
     maps[map] = [];
@@ -47,6 +48,8 @@ for (let map of available_maps) {
             } else if (id == 5) {
                 // Green spawn
                 spawns.green.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
+            } else if (id == 1) {
+                presents.push({x: parseInt(tile) + 1, y: parseInt(row) + 1, destroyed: false});
             }
             temp.push(id);
         }
@@ -71,6 +74,7 @@ Type 5 - Shoot bullet
 Type 6 - Destroy bullet
 Type 7 - Lay mine
 Type 8 - Destroy mine
+Type 9 - Destroy present
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -263,12 +267,31 @@ function detonateMine(id) {
             client.send(JSON.stringify({type: 8, id}));
             if(client.alive) {
                 let distance = Math.sqrt(Math.pow(client.x - mines[id].x, 2) + Math.pow(client.y - mines[id].y, 2));
-                if(distance < 2.5) {
+                if(distance < 1.5) {
                     killTank(client.id);
                 }
             }
         }
+
+        for (let i in presents) {
+            if (!presents[i].destroyed) {
+                let distance = Math.sqrt(Math.pow(presents[i].x - mines[id].x, 2) + Math.pow(presents[i].y - -mines[id].y, 2));
+
+                if (distance < 1.5) {
+                    presents[i].destroyed = true;
+
+                    wss.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y}));
+                        }
+                    })
+                }
+            }
+        }
     });
+
+
+
     delete mines[id];
 }
 

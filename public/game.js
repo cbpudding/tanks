@@ -239,6 +239,7 @@ $(() => {
                     const presents = ["present", "presentblue", "presentgreen"];
                     this.object = models[presents[Math.floor(Math.random() * presents.length)]].clone();
                     this.child = new Tile(0, x, y);
+                    this.destroyed = false;
                     break;
                 case 2:
                     // Regular Wall
@@ -277,6 +278,7 @@ $(() => {
         canCollide() {
             switch(this.id) {
                 case 1:
+                    return this.destroyed ? 0 : 1;
                 case 2:
                     return 1;
                 case 3:
@@ -287,6 +289,13 @@ $(() => {
                     return 4; // Green only
                 default:
                     return 0;
+            }
+        }
+
+        destroy() {
+            if (this.id == 1) {
+                scene.remove(this.object);
+                this.destroyed = true;
             }
         }
     }
@@ -622,6 +631,9 @@ $(() => {
                 case 8:
                     mines[msg.id].delete();
                     delete mines[msg.id];
+                    break;
+                case 9:
+                    currentMap.tiles[msg.y][msg.x].destroy();
                     break;
             }
         };
