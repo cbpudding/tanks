@@ -464,6 +464,11 @@ $(() => {
             case "ArrowRight":
                 buttons.right = pressed;
                 break;
+            case "Space":
+                if(pressed) {
+                    websock.send(JSON.stringify({type: 7}));
+                }
+                break;
         }
     }
 

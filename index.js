@@ -12,6 +12,7 @@ app.get("/", (_req, res) => {
 app.use(Express.static(__dirname + "/public"));
 
 const bullets = {};
+const mines = {};
 
 // Load in the maps for server-side collision checks
 let available_maps = ["maps/debug.csv"];
@@ -68,6 +69,8 @@ Type 3 - Spawn tank
 Type 4 - Destroy tank
 Type 5 - Shoot bullet
 Type 6 - Destroy bullet
+Type 7 - Lay mine
+Type 8 - Destroy mine
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -77,6 +80,7 @@ wss.on("connection", conn => {
     conn.direction = {x: 0, y: 0};
     conn.id = Uuid.v4();
     conn.last = Date.now();
+    conn.mines = 2;
     conn.name = "Unknown";
     conn.team = "unassigned";
     conn.x = 0;
@@ -174,6 +178,19 @@ wss.on("connection", conn => {
                             }
                         }
                         break;
+                    case 7:
+                        if(conn.mines > 0) {
+                            conn.mines--;
+                            const id = Uuid.v4();
+                            mines[id] = {
+                                created: Date.now(),
+                                owner: conn.id,
+                                ticking: false,
+                                x: conn.x,
+                                y: conn.y
+                            };
+                        }
+                        break;
                 }
             }
         } catch(error) {
@@ -209,8 +226,25 @@ function destroyBullet(id) {
     delete bullets[id];
 }
 
+function killTank(id) {
+    switch(tank.team) {
+        case "green":
+            team--;
+            break;
+        case "red":
+            team++;
+            break;
+    }
+    wss.clients.forEach(client => {
+        if(client.id == tank.id) {
+            client.alive = false;
+        }
+        client.send(JSON.stringify({type: 4, id: tank.id}));
+    });
+}
+
 function gameTick() {
-    let payload = {type: 0, tanks: {}, bullets: {}};
+    let payload = {type: 0, tanks: {}, bullets: {}, mines: {}};
     let start = Date.now();
     wss.clients.forEach(client => {
         if(client.alive) {
@@ -230,6 +264,13 @@ function gameTick() {
             rot: bullets[id].rot,
             x: bullets[id].x,
             y: bullets[id].y
+        };
+    }
+    for(let id in mines) {
+        payload.mines[id] = {
+            ticking: mines[id].ticking,
+            x: mines[id].x,
+            y: mines[id].y
         };
     }
     wss.clients.forEach(client => {
@@ -257,20 +298,7 @@ function gameTick() {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.6) {
                             destroyBullet(id);
-                            switch(tank.team) {
-                                case "green":
-                                    team--;
-                                    break;
-                                case "red":
-                                    team++;
-                                    break;
-                            }
-                            wss.clients.forEach(client => {
-                                if(client.id == tank.id) {
-                                    client.alive = false;
-                                }
-                                client.send(JSON.stringify({type: 4, id: tank.id}));
-                            });
+                            killTank(tank.id);
                         }
                     }
                 });
@@ -320,6 +348,9 @@ function gameTick() {
                 }
             }
         }
+    }
+    for(let id in mines) {
+        // ...
     }
     setTimeout(gameTick, 17 - (Date.now() - start));
 }
