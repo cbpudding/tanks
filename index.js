@@ -43,10 +43,10 @@ for (let map of available_maps) {
             // TODO: Locate team spawns and store the coordinates to each in a list for each team.
             if (id == 4) {
                 // Red spawn
-                spawns.red.push({x: parseInt(tile), y: parseInt(row)});
+                spawns.red.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
             } else if (id == 5) {
                 // Green spawn
-                spawns.green.push({x: parseInt(tile), y: parseInt(row)});
+                spawns.green.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
             }
             temp.push(id);
         }
