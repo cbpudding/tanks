@@ -107,7 +107,7 @@ wss.on("connection", conn => {
                                             let has_collided = false;
                                             for(let check_x = Math.floor(msg.x); check_x <= Math.floor(msg.x + 0.95); check_x++) {
                                                 for(let check_y = -Math.ceil(msg.y); check_y <= -Math.ceil(msg.y - 0.95); check_y++) {
-                                                    switch(maps[available_maps[0]][check_x][check_y]) {
+                                                    switch(maps[available_maps[0]][check_y][check_x]) {
                                                     case 1:
                                                     case 2:
                                                         has_collided = true;
@@ -116,6 +116,16 @@ wss.on("connection", conn => {
                                                         let dist = Math.sqrt((Math.pow(check_x - msg.x, 2) + Math.pow(-check_y - msg.y, 2)));
                                                         // Check if close enough to hole to collide
                                                         if (dist <= 0.975) {
+                                                            has_collided = true;
+                                                        }
+                                                        break;
+                                                    case 6:
+                                                        if (conn.team == "green") {
+                                                            has_collided = true;
+                                                        }
+                                                        break;
+                                                    case 7:
+                                                        if (conn.team == "red") {
                                                             has_collided = true;
                                                         }
                                                         break;
@@ -227,19 +237,19 @@ function destroyBullet(id) {
 }
 
 function killTank(id) {
-    switch(tank.team) {
-        case "green":
-            team--;
-            break;
-        case "red":
-            team++;
-            break;
-    }
     wss.clients.forEach(client => {
-        if(client.id == tank.id) {
+        if(client.id == id) {
             client.alive = false;
+            switch(client.team) {
+                case "green":
+                    team--;
+                    break;
+                case "red":
+                    team++;
+                    break;
+            }
         }
-        client.send(JSON.stringify({type: 4, id: tank.id}));
+        client.send(JSON.stringify({type: 4, id: id}));
     });
 }
 
@@ -306,7 +316,7 @@ function gameTick() {
                     let check_collision = (x, y) => {
                         for(let check_x = Math.floor(x - 0.01); check_x <= Math.floor(x + 0.01); check_x++) {
                             for(let check_y = -Math.ceil(y + 0.01); check_y <= -Math.ceil(y - 0.01); check_y++) {
-                                switch(maps[available_maps[0]][check_x][check_y]) {
+                                switch(maps[available_maps[0]][check_y][check_x]) {
                                     case 1:
                                     case 2:
                                         return true;

@@ -95,23 +95,29 @@ $(() => {
             let y_min = -Math.ceil(y);
             let y_max = -Math.ceil(y - collider_size);
 
-            let is_hole = 0;
+            let wall_type = 0;
             for(let check_x = x_min; check_x <= x_max; check_x++) {
                 for(let check_y = y_min; check_y <= y_max; check_y++) {
-                    switch(this.tiles[check_x][check_y].canCollide()) {
+                    switch(this.tiles[check_y][check_x].canCollide()) {
                     case 1:
-                        return 1;
+                        wall_type =  1;
+                        break;
                     case 2:
                         // Check if within 0.475 units (overlapping hole)
                         let dist = Math.sqrt((Math.pow(check_x - x, 2) + Math.pow(-check_y - y, 2)));
                         if (dist <= 0.975 ) {
-                            is_hole = 2; // Because it is overwritten by a wall if found
+                            wall_type = 2; // Because it is overwritten by a wall if found
                         }
+                        break;
+                    case 3:
+                        return 3; // Highest priority
+                    case 4:
+                        return 4; // Highest priority
                     }
                 }
             }
 
-            return is_hole;
+            return wall_type;
         }
     }
 
@@ -235,8 +241,12 @@ $(() => {
                     return 1;
                 case 3:
                     return 2;
+                case 6: // Red barrier
+                    return 3; // Red only
+                case 7: // Green barrier
+                    return 4; // Green only
                 default:
-                return 0;
+                    return 0;
             }
         }
     }
@@ -294,11 +304,13 @@ $(() => {
             }
             localTank.desiredBaseAngle = desiredAngle;
 
-            // Move tank (and test collision)
-            if (currentMap.isColliding(0.95, localTank.x + (direction.x * 2 * deltatime), localTank.y) == 0) {
+            // Move tank (and test collisions)
+            let collided = currentMap.isColliding(0.95, localTank.x + (direction.x * 2 * deltatime), localTank.y);
+            if (collided == 0 || collided == (localTank.team == teams.green ? 4 : 3)) {
                 localTank.x += direction.x * 2 * deltatime;
             }
-            if (currentMap.isColliding(0.95, localTank.x, localTank.y - (direction.y * 2 * deltatime)) == 0) {
+            collided = currentMap.isColliding(0.95, localTank.x, localTank.y - (direction.y * 2 * deltatime));
+            if (collided == 0 || collided == (localTank.team == teams.green ? 4 : 3)) {
                 localTank.y -= direction.y * 2 * deltatime;
             }
             setCameraPosition(localTank.x, localTank.y);
