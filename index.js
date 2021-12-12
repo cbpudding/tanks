@@ -17,6 +17,12 @@ const bullets = {};
 let available_maps = ["maps/bigmap.csv"];
 let maps = {};
 var team = 0;
+let spawns = {
+    red: [],
+    redInc: 0,
+    green: [],
+    greenInc: 0
+};
 
 for (let map of available_maps) {
     maps[map] = [];
@@ -26,14 +32,21 @@ for (let map of available_maps) {
         .map(x => x.split(","));
     // Map borders
     maps[map].push(Array(read_map[0].length + 2).fill(2));
-    for (let row of read_map) {
+    for (let row in read_map) {
         let temp = [2];
-        for (let tile of row) {
-            let id = parseInt(tile, 10) || 0;
+        for (let tile in read_map[row]) {
+            let id = parseInt(read_map[row][tile], 10) || 0;
             if (id < 0) {
                 id = 0
             }
             // TODO: Locate team spawns and store the coordinates to each in a list for each team.
+            if (id == 4) {
+                // Red spawn
+                spawns.red.push({x: parseInt(tile), y: parseInt(row)});
+            } else if (id == 5) {
+                // Green spawn
+                spawns.green.push({x: parseInt(tile), y: parseInt(row)});
+            }
             temp.push(id);
         }
         let padding = (read_map[0].length + 2) - temp.length;
@@ -125,15 +138,21 @@ wss.on("connection", conn => {
                             if(msg.name.length <= 32) {
                                 conn.name = msg.name;
                                 conn.bullets = 7;
-                                conn.x = 4;
-                                conn.y = -2;
                                 if(team >= 0) {
                                     conn.team = "red";
+                                    let spawnNum = ++spawns.redInc % spawns.red.length;
+                                    conn.x = spawns.red[spawnNum].x;
+                                    conn.y = -spawns.red[spawnNum].y;
                                     team--;
                                 } else {
                                     conn.team = "green";
+                                    let spawnNum = ++spawns.greenInc % spawns.green.length;
+                                    conn.x = spawns.green[spawnNum].x;
+                                    conn.y = -spawns.green[spawnNum].y;
+
                                     team++;
                                 }
+                                console.log(spawns);
                                 console.log(team);
                                 conn.alive = true;
                             }
