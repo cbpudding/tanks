@@ -195,6 +195,7 @@ wss.on("connection", conn => {
                             mines[id] = {
                                 created: Date.now(),
                                 owner: conn.id,
+                                team: conn.team,
                                 ticking: false,
                                 x: conn.x,
                                 y: conn.y
@@ -253,6 +254,24 @@ function killTank(id) {
     });
 }
 
+function detonateMine(id) {
+    wss.clients.forEach(client => {
+        if(client.readyState === WebSocket.OPEN) {
+            if(client.id == mines[id].owner) {
+                client.mines++;
+            }
+            client.send(JSON.stringify({type: 8, id}));
+            if(client.alive) {
+                let distance = Math.sqrt(Math.pow(client.x - mines[id].x, 2) + Math.pow(client.y - mines[id].y, 2));
+                if(distance < 2.5) {
+                    killTank(client.id);
+                }
+            }
+        }
+    });
+    delete mines[id];
+}
+
 function gameTick() {
     let payload = {type: 0, tanks: {}, bullets: {}, mines: {}};
     let start = Date.now();
@@ -278,6 +297,7 @@ function gameTick() {
     }
     for(let id in mines) {
         payload.mines[id] = {
+            team: mines[id].team,
             ticking: mines[id].ticking,
             x: mines[id].x,
             y: mines[id].y
@@ -360,7 +380,41 @@ function gameTick() {
         }
     }
     for(let id in mines) {
-        // ...
+        if(mines[id].ticking) {
+            if(Date.now() - mines[id].created > 2000) {
+                detonateMine(id);
+            }
+        } else if(Date.now() - mines[id].created > 7000) {
+            if(!mines[id].ticking) {
+                mines[id].ticking = true;
+                mines[id].created = Date.now();
+            }
+        }
+        if(mines[id]) {
+            for(let bid in bullets) {
+                let distance = Math.sqrt(Math.pow(mines[id].x - bullets[bid].x, 2) + Math.pow(mines[id].y - bullets[bid].y, 2));
+                if(distance < 0.75) {
+                    destroyBullet(bid);
+                    detonateMine(id);
+                    break;
+                }
+            }
+        }
+        if(mines[id]) {
+            wss.clients.forEach(tank => {
+                if(mines[id]) {
+                    if(tank.team != mines[id].team) {
+                        let distance = Math.sqrt(Math.pow(mines[id].x - tank.x, 2) + Math.pow(mines[id].y - tank.y, 2));
+                        if(distance < 3) {
+                            if(!mines[id].ticking) {
+                                mines[id].ticking = true;
+                                mines[id].created = Date.now();
+                            }
+                        }
+                    }
+                }
+            });
+        }
     }
     setTimeout(gameTick, 17 - (Date.now() - start));
 }

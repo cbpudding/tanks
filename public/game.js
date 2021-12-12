@@ -121,6 +121,46 @@ $(() => {
         }
     }
 
+    const mineColor = new THREE.MeshPhongMaterial({color: 0x777777});
+
+    class Mine {
+        constructor(team, ticking, x, y) {
+            this.lit = false;
+            this.model = models.mine.clone();
+            this.model.position.x = x;
+            this.model.position.z = y;
+            this.model.scale.set(0.5, 0.5, 0.5);
+            this.team = team;
+            this.ticking = ticking;
+            this.totaltime = 0;
+            this.x = x;
+            this.y = y;
+            recolorModel(this.model, mineColor);
+            scene.add(this.model);
+        }
+
+        delete() {
+            scene.remove(this.model);
+        }
+
+        update(deltatime) {
+            if(this.ticking) {
+                this.totaltime += deltatime;
+                if(Math.floor((this.totaltime * 7) % 2) == 0) {
+                    if(this.lit) {
+                        this.lit = false;
+                        recolorModel(this.model, mineColor);
+                    }
+                } else {
+                    if(!this.lit) {
+                        this.lit = true;
+                        recolorModel(this.model, this.team.colorMaterial);
+                    }
+                }
+            }
+        }
+    }
+
     class Tank {
         constructor(id, name, team) {
             this.base = models.base.clone();
@@ -263,6 +303,7 @@ $(() => {
     var direction = {x: 0, y: 0};
     var localTank = null;
     var me = null;
+    const mines = {};
     const models = {};
     const tanks = {};
     const teams = {
@@ -430,6 +471,9 @@ $(() => {
         for(let id in bullets) {
             bullets[id].update(deltatime);
         }
+        for(let id in mines) {
+            mines[id].update(deltatime);
+        }
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
     }
@@ -550,6 +594,13 @@ $(() => {
                         bullets[id].x = msg.bullets[id].x;
                         bullets[id].y = msg.bullets[id].y;
                     }
+
+                    for(let id in msg.mines) {
+                        if(!mines[id]) {
+                            mines[id] = new Mine(teams[msg.mines[id].team], msg.mines[id].ticking, msg.mines[id].x, msg.mines[id].y);
+                        }
+                        mines[id].ticking = msg.mines[id].ticking;
+                    }
                     break;
                 case 2:
                     me = msg.id;
@@ -567,6 +618,11 @@ $(() => {
                 case 6:
                     bullets[msg.id].delete();
                     delete bullets[msg.id];
+                    break;
+                case 8:
+                    mines[msg.id].delete();
+                    delete mines[msg.id];
+                    break;
             }
         };
 
