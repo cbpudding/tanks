@@ -14,7 +14,7 @@ app.use(Express.static(__dirname + "/public"));
 const bullets = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/bigmap.csv"];
+let available_maps = ["maps/debug.csv"];
 let maps = {};
 var team = 0;
 let spawns = {
@@ -103,7 +103,7 @@ wss.on("connection", conn => {
                                             let has_collided = false;
                                             for(let check_x = Math.floor(msg.x); check_x <= Math.floor(msg.x + 0.95); check_x++) {
                                                 for(let check_y = -Math.ceil(msg.y); check_y <= -Math.ceil(msg.y - 0.95); check_y++) {
-                                                    switch(maps["maps/bigmap.csv"][check_x][check_y]) {
+                                                    switch(maps[available_maps[0]][check_x][check_y]) {
                                                     case 1:
                                                     case 2:
                                                         has_collided = true;
@@ -152,8 +152,6 @@ wss.on("connection", conn => {
 
                                     team++;
                                 }
-                                console.log(spawns);
-                                console.log(team);
                                 conn.alive = true;
                             }
                         }
@@ -194,12 +192,11 @@ wss.on("connection", conn => {
                     break;
             }
         }
-        console.log(team);
         wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 4, id: conn.id}));
         });
     });
-    conn.send(JSON.stringify({type: 2, id: conn.id, map: "maps/bigmap.csv"}));
+    conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0]}));
 });
 
 function destroyBullet(id) {
@@ -268,8 +265,6 @@ function gameTick() {
                                     team++;
                                     break;
                             }
-                            console.log(team);
-                            
                             wss.clients.forEach(client => {
                                 if(client.id == tank.id) {
                                     client.alive = false;
@@ -283,7 +278,7 @@ function gameTick() {
                     let check_collision = (x, y) => {
                         for(let check_x = Math.floor(x - 0.01); check_x <= Math.floor(x + 0.01); check_x++) {
                             for(let check_y = -Math.ceil(y + 0.01); check_y <= -Math.ceil(y - 0.01); check_y++) {
-                                switch(maps["maps/bigmap.csv"][check_x][check_y]) {
+                                switch(maps[available_maps[0]][check_x][check_y]) {
                                     case 1:
                                     case 2:
                                         return true;
@@ -346,7 +341,6 @@ setInterval(() => {
                             break;
                     }
                 }
-                console.log(team);
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
                         player.send(JSON.stringify({type: 4, id: client.id}));

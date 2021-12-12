@@ -34,6 +34,22 @@
     width: 100%;
 }
 
+.dyslexia {
+    font-family: "OpenDyslexic";
+}
+
+.dyslexia #creators {
+    font-family: "OpenDyslexic";
+}
+
+.dyslexia #nametags {
+    font-family: "OpenDyslexic";
+}
+
+.dyslexia #title {
+    font-family: "OpenDyslexic";
+}
+
 #main {
     height: 50%;
     left: 0;
@@ -75,12 +91,20 @@
 }
 
 #settings {
-    display: none;
     height: 50%;
     left: 0;
     position: absolute;
     top: 50%;
     width: 100%;
+}
+
+#settings div {
+    background-color: white;
+    border-radius: 1em;
+    left: 37.5%;
+    padding: 16px;
+    position: relative;
+    width: 25%;
 }
 
 #title {
@@ -92,6 +116,10 @@
     margin: 0;
     text-align: center;
     user-select: none;
+}
+
+body {
+    font-family: "OpenSans", sans-serif;
 }
 
 button {

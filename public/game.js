@@ -129,7 +129,6 @@ $(() => {
                 this.name = document.createElement('p');
                 this.name.innerText = name;
                 this.name.style.position = "absolute";
-                this.name.style.font = "16px OpenSans";
                 $("#nametags").append(this.name);
             }
 
@@ -165,7 +164,11 @@ $(() => {
                 vector.x = (vector.x + 1) / 2 * window.innerWidth;
                 vector.y = -(vector.y - 1) / 2 * window.innerHeight;
 
-                textMeasurer.font = "16px OpenSans";
+                if(localStorage.dyslexic == "true") {
+                    textMeasurer.font = "16px OpenSans";
+                } else {
+                    textMeasurer.font = "16px OpenDyslexic";
+                }
                 let width = textMeasurer.measureText(this.name.innerText).width / 2;
 
                 this.name.style.left = vector.x - width + "px";
@@ -565,6 +568,39 @@ $(() => {
     $(window).on("mousemove", pointCannonAtMouse);
     $(window).on("resize", scaleDisplay);
 
+    function dyslexiaFont(enabled) {
+        if(enabled) {
+            $("body").addClass("dyslexia");
+        } else {
+            $("body").removeClass("dyslexia");
+        }
+    }
+
+    function recolorGreen(enabled) {
+        if(enabled) {
+            teams.green.color = 0x00bfff;
+            teams.green.colorMaterial.color = new THREE.Color(0x00bfff);
+            $("#greenpreview").css("color", "deepskyblue");
+        } else {
+            teams.green.color = 0x14430d;
+            teams.green.colorMaterial.color = new THREE.Color(0x14430d);
+            $("#greenpreview").css("color", "green");
+        }
+    }
+
+    $("#dyslexic").click(() => {
+        localStorage.dyslexic = $("#dyslexic").prop("checked");
+        dyslexiaFont(localStorage.dyslexic == "true");
+    });
+    $("#dyslexic").prop("checked", localStorage.dyslexic == "true");
+    $("#recolor").click(() => {
+        localStorage.recolor = $("#recolor").prop("checked");
+        recolorGreen(localStorage.recolor == "true");
+    });
+    $("#recolor").prop("checked", localStorage.recolor == "true");
     $("#nickname").val(localStorage.nickname || "");
     $("#nickname").focus();
+
+    dyslexiaFont(localStorage.dyslexic == "true");
+    recolorGreen(localStorage.recolor == "true");
 });

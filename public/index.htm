@@ -16,6 +16,7 @@
         <title>Tanks</title>
     </head>
     <body>
+        <div id="killfeed"></div>
         <div id="menu">
             <div id="main">
                 <p id="title">Tanks!</p>
@@ -23,7 +24,12 @@
                 <input id="nickname" type="text" placeholder="Nickname" maxlength="32" />
                 <button id="play">Play</button>
             </div>
-            <div id="settings"></div>
+            <div id="settings">
+                <div>
+                    <p><input id="recolor" type="checkbox" /> Recolor <span id="greenpreview" style="color: green;">green</span> team for visibility</p>
+                    <p style="font-family: OpenDyslexic;"><input id="dyslexic" type="checkbox" /> Change font for readability</p>
+                </div>
+            </div>
         </div>
         <div id="nametags"></div>
         <canvas id="display"></canvas>
