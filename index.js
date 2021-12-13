@@ -216,15 +216,13 @@ wss.on("connection", conn => {
     });
 
     conn.on("close", () => {
-        if(conn.alive) {
-            switch(conn.team) {
-                case "green":
-                    team--;
-                    break;
-                case "red":
-                    team++;
-                    break;
-            }
+        switch(conn.team) {
+            case "green":
+                team--;
+                break;
+            case "red":
+                team++;
+                break;
         }
         wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 4, id: conn.id}));
@@ -443,15 +441,13 @@ setInterval(() => {
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
             if(now - client.last > 2000) {
-                if(client.alive) {
-                    switch(client.team) {
-                        case "green":
-                            team--;
-                            break;
-                        case "red":
-                            team++;
-                            break;
-                    }
+                switch(client.team) {
+                    case "green":
+                        team--;
+                        break;
+                    case "red":
+                        team++;
+                        break;
                 }
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
