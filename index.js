@@ -173,6 +173,12 @@ wss.on("connection", conn => {
                                     conn.y = -spawns.green[spawnNum].y;
                                 }
                                 conn.alive = true;
+
+                                for(let i in presents) {
+                                    if (presents[i].destroyed) {
+                                        conn.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y}));
+                                    }
+                                }
                             }
                         }
                         break;
@@ -353,6 +359,14 @@ function gameTick() {
                             for(let check_y = -Math.ceil(y + 0.01); check_y <= -Math.ceil(y - 0.01); check_y++) {
                                 switch(maps[available_maps[0]][check_y][check_x]) {
                                     case 1:
+                                        let still_exists = true;
+                                    for (let i in presents) {
+                                            if (presents[i].x == check_x && presents[i].y == check_y && presents[i].destroyed) {
+                                                still_exists = false;
+                                                break;
+                                            }
+                                        }
+                                        return still_exists;
                                     case 2:
                                         return true;
                                 }

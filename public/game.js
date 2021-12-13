@@ -293,7 +293,7 @@ $(() => {
         }
 
         destroy() {
-            if (this.id == 1) {
+            if (this.id == 1 && !this.destroyed) {
                 scene.remove(this.object);
                 this.destroyed = true;
             }
