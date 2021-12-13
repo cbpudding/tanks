@@ -50,6 +50,15 @@
     font-family: "OpenDyslexic";
 }
 
+#killfeed {
+    height: 25%;
+    left: 75%;
+    position: absolute;
+    top: 0;
+    width: 25%;
+    z-index: 2;
+}
+
 #main {
     height: 50%;
     left: 0;
@@ -65,7 +74,7 @@
     position: absolute;
     top: 0;
     width: 100%;
-    z-index: 2;
+    z-index: 3;
 }
 
 #nametags {
@@ -112,7 +121,7 @@
     font-family: SigmarOne;
     font-size: 10em;
     padding-bottom: 0;
-    padding-top: 1em;
+    padding-top: 0.25em;
     margin: 0;
     text-align: center;
     user-select: none;

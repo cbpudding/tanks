@@ -86,7 +86,13 @@ wss.on("connection", conn => {
     conn.last = Date.now();
     conn.mines = 2;
     conn.name = "Unknown";
-    conn.team = "unassigned";
+    if(team >= 0) {
+        conn.team = "red";
+        team--;
+    } else {
+        conn.team = "green";
+        team++;
+    }
     conn.x = 0;
     conn.y = 0;
 
@@ -156,19 +162,15 @@ wss.on("connection", conn => {
                             if(msg.name.length <= 32) {
                                 conn.name = msg.name;
                                 conn.bullets = 7;
-                                if(team >= 0) {
-                                    conn.team = "red";
+                                conn.mines = 2;
+                                if(conn.team == "red") {
                                     let spawnNum = ++spawns.redInc % spawns.red.length;
                                     conn.x = spawns.red[spawnNum].x;
                                     conn.y = -spawns.red[spawnNum].y;
-                                    team--;
                                 } else {
-                                    conn.team = "green";
                                     let spawnNum = ++spawns.greenInc % spawns.green.length;
                                     conn.x = spawns.green[spawnNum].x;
                                     conn.y = -spawns.green[spawnNum].y;
-
-                                    team++;
                                 }
                                 conn.alive = true;
                             }
@@ -245,14 +247,6 @@ function killTank(id) {
     wss.clients.forEach(client => {
         if(client.id == id) {
             client.alive = false;
-            switch(client.team) {
-                case "green":
-                    team--;
-                    break;
-                case "red":
-                    team++;
-                    break;
-            }
         }
         client.send(JSON.stringify({type: 4, id: id}));
     });

@@ -1,13 +1,3 @@
-/* TODO List:
-- Tank movement
-- Multiplayer
-- Bullets
-- Mines
-- Tank death
-- Main menu
-- Sound
-*/
-
 $(() => {
     const canvas = $("#display")[0];
     const textMeasurer = document.createElement("canvas").getContext("2d");
@@ -16,6 +6,7 @@ $(() => {
     const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 128);
     const renderer = new THREE.WebGLRenderer({canvas});
     const gltfLoader = new THREE.GLTFLoader();
+    const texLoader = new THREE.TextureLoader();
 
     var websock = null;
 
