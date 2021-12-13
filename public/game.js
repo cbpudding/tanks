@@ -9,6 +9,7 @@ $(() => {
     const texLoader = new THREE.TextureLoader();
 
     const materials = {};
+    const names = {};
     const textures = {};
     var websock = null;
 
@@ -164,11 +165,13 @@ $(() => {
             this.direction = {x: 0, y: 0}; // Used for movement prediction
 
             // Create name geometry
+            this.name = name;
+            names[id] = name;
             if (name != "") {
-                this.name = document.createElement('p');
-                this.name.innerText = name;
-                this.name.style.position = "absolute";
-                $("#nametags").append(this.name);
+                this.nametag = document.createElement('p');
+                this.nametag.innerText = name;
+                this.nametag.style.position = "absolute";
+                $("#nametags").append(this.nametag);
             }
 
             this.team = team;
@@ -182,8 +185,8 @@ $(() => {
         }
 
         delete() {
-            if(this.name) {
-                this.name.remove();
+            if(this.nametag) {
+                this.nametag.remove();
             }
             scene.remove(this.base);
             scene.remove(this.cannon);
@@ -197,7 +200,7 @@ $(() => {
             this.cannon.position.z = this.y;
             this.cannon.rotation.y = this.cannonAngle;
 
-            if(this.name) {
+            if(this.nametag) {
                 camera.updateMatrixWorld();
                 let vector = new THREE.Vector3(this.x, 1.5, this.y).project(camera);
                 vector.x = (vector.x + 1) / 2 * window.innerWidth;
@@ -208,10 +211,10 @@ $(() => {
                 } else {
                     textMeasurer.font = "16px OpenDyslexic";
                 }
-                let width = textMeasurer.measureText(this.name.innerText).width / 2;
+                let width = textMeasurer.measureText(this.nametag.innerText).width / 2;
 
-                this.name.style.left = vector.x - width + "px";
-                this.name.style.top = vector.y + "px";
+                this.nametag.style.left = vector.x - width + "px";
+                this.nametag.style.top = vector.y + "px";
             }
         }
     }
@@ -636,6 +639,7 @@ $(() => {
                         localTank = null;
                         $("#menu").show();
                     }
+                    console.log(names[msg.killer] + " killed " + names[msg.id] + " with " + msg.method);
                     tanks[msg.id].delete();
                     delete tanks[msg.id];
                     break;

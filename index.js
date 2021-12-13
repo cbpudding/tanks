@@ -231,7 +231,7 @@ wss.on("connection", conn => {
                 break;
         }
         wss.clients.forEach(client => {
-            client.send(JSON.stringify({type: 4, id: conn.id}));
+            client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect"}));
         });
     });
     conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0]}));
@@ -247,12 +247,13 @@ function destroyBullet(id) {
     delete bullets[id];
 }
 
-function killTank(id) {
+function killTank(id, killer, method) {
+    let payload = JSON.stringify({type: 4, id, killer, method});
     wss.clients.forEach(client => {
         if(client.id == id) {
             client.alive = false;
         }
-        client.send(JSON.stringify({type: 4, id: id}));
+        client.send(payload);
     });
 }
 
@@ -266,7 +267,7 @@ function detonateMine(id) {
             if(client.alive) {
                 let distance = Math.sqrt(Math.pow(client.x - mines[id].x, 2) + Math.pow(client.y - mines[id].y, 2));
                 if(distance < 1.5) {
-                    killTank(client.id);
+                    killTank(client.id, mines[id].owner, "mine");
                 }
             }
         }
@@ -348,8 +349,8 @@ function gameTick() {
                     if(tank.alive && bullets[id]) {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.6) {
+                            killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet");
                             destroyBullet(id);
-                            killTank(tank.id);
                         }
                     }
                 });
@@ -432,7 +433,7 @@ function gameTick() {
         if(mines[id]) {
             wss.clients.forEach(tank => {
                 if(mines[id]) {
-                    if(tank.team != mines[id].team) {
+                    if(tank.team != mines[id].team && tank.alive) {
                         let distance = Math.sqrt(Math.pow(mines[id].x - tank.x, 2) + Math.pow(mines[id].y - tank.y, 2));
                         if(distance < 3) {
                             if(!mines[id].ticking) {
@@ -465,7 +466,7 @@ setInterval(() => {
                 }
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
-                        player.send(JSON.stringify({type: 4, id: client.id}));
+                        player.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect"}));
                     }
                 });
                 client.terminate();
