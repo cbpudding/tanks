@@ -8,6 +8,8 @@ $(() => {
     const gltfLoader = new THREE.GLTFLoader();
     const texLoader = new THREE.TextureLoader();
 
+    const materials = {};
+    const textures = {};
     var websock = null;
 
     class Bullet {
@@ -223,6 +225,7 @@ $(() => {
 
     class Tile {
         constructor(id, x, y) {
+            let geometry, material;
             this.id = id;
             switch(id) {
                 case 1:
@@ -242,18 +245,24 @@ $(() => {
                     break;
                 case 6:
                     // Red Barrier
+                    geometry = new THREE.PlaneGeometry(1, 1);
+                    geometry.rotateX(-Math.PI / 2);
+                    this.object = new THREE.Mesh(geometry, materials.redbarrier);
                     break;
                 case 7:
                     // Blue Barrier
+                    geometry = new THREE.PlaneGeometry(1, 1);
+                    geometry.rotateX(-Math.PI / 2);
+                    this.object = new THREE.Mesh(geometry, materials.greenbarrier);
                     break;
                 case 8:
                     // Heavy Snow
                     break;
                 default:
                     // Ground
-                    let geometry = new THREE.PlaneGeometry(1, 1);
+                    geometry = new THREE.PlaneGeometry(1, 1);
                     geometry.rotateX(-Math.PI / 2);
-                    let material = new THREE.MeshPhongMaterial({color: 0xffffff});
+                    material = new THREE.MeshPhongMaterial({color: 0xffffff});
                     this.object = new THREE.Mesh(geometry, material);
                     break;
             }
@@ -436,6 +445,13 @@ $(() => {
         });
     }
 
+    function loadTexture(name, path) {
+        return new Promise(resolve => {
+            textures[name] = texLoader.load(path);
+            resolve();
+        });
+    }
+
     function pointCannonAtMouse(event) {
         if(localTank) {
             let mouse = {x: event.pageX, y: event.pageY};
@@ -552,8 +568,16 @@ $(() => {
         loadModel("wall", "models/rockwall.glb"),
         loadModel("base", "models/tank_bottom.glb"),
         loadModel("cannon", "models/tank_top.glb"),
+        loadTexture("barrierblue", "textures/blue_barrier.png"),
+        loadTexture("barriergreen", "textures/green_barrier.png"),
+        loadTexture("barrierred", "textures/red_barrier.png"),
     ]).then(() => {
+        materials.redbarrier = new THREE.MeshPhongMaterial({map: textures.barrierred});
+        materials.greenbarrier = new THREE.MeshPhongMaterial({map: textures.barriergreen});
         websock = new WebSocket("ws://" + location.hostname + ":3000/");
+
+        dyslexiaFont(localStorage.dyslexic == "true");
+        recolorGreen(localStorage.recolor == "true");
 
         websock.onmessage = event => {
             let msg = JSON.parse(event.data);
@@ -657,10 +681,12 @@ $(() => {
             teams.green.color = 0x00bfff;
             teams.green.colorMaterial.color = new THREE.Color(0x00bfff);
             $("#greenpreview").css("color", "deepskyblue");
+            materials.greenbarrier.map = textures.barrierblue;
         } else {
             teams.green.color = 0x14430d;
             teams.green.colorMaterial.color = new THREE.Color(0x14430d);
             $("#greenpreview").css("color", "green");
+            materials.greenbarrier.map = textures.barriergreen;
         }
     }
 
@@ -676,7 +702,4 @@ $(() => {
     $("#recolor").prop("checked", localStorage.recolor == "true");
     $("#nickname").val(localStorage.nickname || "");
     $("#nickname").focus();
-
-    dyslexiaFont(localStorage.dyslexic == "true");
-    recolorGreen(localStorage.recolor == "true");
 });
