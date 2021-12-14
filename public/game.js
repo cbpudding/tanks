@@ -313,6 +313,7 @@ $(() => {
     var currentMap = null;
     var desiredAngle = 0;
     var direction = {x: 0, y: 0};
+    var killfeed = []; // Array to store killfeed elements
     var localTank = null;
     var me = null;
     const mines = {};
@@ -640,6 +641,38 @@ $(() => {
                         $("#menu").show();
                     }
                     console.log(names[msg.killer] + " killed " + names[msg.id] + " with " + msg.method);
+
+                    let killfeedEntry = document.createElement("div");
+                    killfeedEntry.className = "killfeedEntry";
+
+                    let victim = document.createElement("div");
+                    victim.innerText = names[msg.id];
+                    victim.className = "killfeedName";
+                    victim.style.color = "#" + (tanks[msg.id].team == teams.green ? teams.green.color.toString(16) : teams.red.color.toString(16));
+
+                    // TODO: Method icons
+                    let method = document.createElement("div");
+                    method.innerText = "<" + msg.method + ">";
+                    method.className = "killfeedMethod";
+
+                    let killer = document.createElement("div");
+                    killer.innerText = names[msg.killer];
+                    killer.className = "killfeedName";
+                    killer.style.color = "#" + (tanks[msg.killer].team == teams.green ? teams.green.color.toString(16) : teams.red.color.toString(16));
+
+                    killfeedEntry.appendChild(killer);
+                    killfeedEntry.appendChild(method);
+                    killfeedEntry.appendChild(victim);
+
+
+                    if (killfeed.length >= 4) {
+                        killfeed[0].remove();
+                        killfeed.shift();
+                    }
+                    
+                    killfeed.push(killfeedEntry);
+                    document.getElementById("killfeed").appendChild(killfeedEntry);
+
                     tanks[msg.id].delete();
                     delete tanks[msg.id];
                     break;

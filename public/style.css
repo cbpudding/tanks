@@ -51,6 +51,27 @@
     z-index: 2;
 }
 
+.killfeedEntry {
+    overflow: hidden;
+    width: fit-content;
+    background-color: #FFE6CC;
+    border-radius: 10px;
+    margin-top: 10px;
+    float: right;
+}
+
+.killfeedMethod {
+    display: inline-block;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+.killfeedName {
+    display: inline-block;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
 #main {
     height: 50%;
     left: 0;
