@@ -44,10 +44,11 @@
 
 #killfeed {
     height: 25%;
-    left: 75%;
+    left: 67%;
+    overflow: hidden;
     position: absolute;
     top: 0;
-    width: 25%;
+    width: 33%;
     z-index: 2;
 }
 
