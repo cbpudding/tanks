@@ -119,6 +119,15 @@ wss.on("connection", conn => {
                                                 for(let check_y = -Math.ceil(msg.y); check_y <= -Math.ceil(msg.y - 0.95); check_y++) {
                                                     switch(maps[available_maps[0]][check_y][check_x]) {
                                                     case 1:
+                                                        let still_exists = true;
+                                                        for (let i in presents) {
+                                                            if (presents[i].x == check_x && presents[i].y == check_y && presents[i].destroyed) {
+                                                                still_exists = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                        has_collided = has_collided || still_exists;
+                                                        break;
                                                     case 2:
                                                         has_collided = true;
                                                         break;
@@ -361,7 +370,7 @@ function gameTick() {
                                 switch(maps[available_maps[0]][check_y][check_x]) {
                                     case 1:
                                         let still_exists = true;
-                                    for (let i in presents) {
+                                        for (let i in presents) {
                                             if (presents[i].x == check_x && presents[i].y == check_y && presents[i].destroyed) {
                                                 still_exists = false;
                                                 break;
