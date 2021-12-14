@@ -119,11 +119,13 @@ $(() => {
 
     class Mine {
         constructor(team, ticking, x, y) {
+            this.exploded = false;
             this.lit = false;
             this.model = models.mine.clone();
             this.model.position.x = x;
             this.model.position.z = y;
             this.model.scale.set(0.5, 0.5, 0.5);
+            this.queueDeletion = false;
             this.team = team;
             this.ticking = ticking;
             this.totaltime = 0;
@@ -131,6 +133,24 @@ $(() => {
             this.y = y;
             recolorModel(this.model, mineColor);
             scene.add(this.model);
+        }
+
+        explode() {
+            scene.remove(this.model);
+            this.model = new THREE.Mesh(
+                new THREE.SphereGeometry(1.5),
+                materials.explosion.clone()
+            );
+            this.model.position.x = this.x;
+            this.model.position.z = this.y;
+            this.model.rotation.x = -Math.PI / 4; // Hide seam
+            this.model.rotation.y = Math.random()*Math.PI;
+
+            this.model.material.transparent = true;
+            this.model.material.opacity = 1;
+            scene.add(this.model);
+            
+            this.exploded = true;
         }
 
         delete() {
@@ -150,6 +170,12 @@ $(() => {
                         this.lit = true;
                         recolorModel(this.model, this.team.colorMaterial);
                     }
+                }
+            } else if (this.exploded) {
+                this.model.rotation.y += Math.PI / 4 * deltatime;
+                this.model.material.opacity -= 2 * deltatime;
+                if (this.model.material.opacity <= 0) {
+                    this.queueDeletion = true;
                 }
             }
         }
@@ -493,6 +519,10 @@ $(() => {
         }
         for(let id in mines) {
             mines[id].update(deltatime);
+            if (mines[id].queueDeletion == true) {
+                mines[id].delete();
+                delete mines[id];
+            }
         }
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
@@ -575,9 +605,12 @@ $(() => {
         loadTexture("barrierblue", "textures/blue_barrier.png"),
         loadTexture("barriergreen", "textures/green_barrier.png"),
         loadTexture("barrierred", "textures/red_barrier.png"),
+        loadTexture("explosion", "textures/explosion.png")
     ]).then(() => {
         materials.redbarrier = new THREE.MeshPhongMaterial({map: textures.barrierred});
         materials.greenbarrier = new THREE.MeshPhongMaterial({map: textures.barriergreen});
+        materials.explosion = new THREE.MeshPhongMaterial({map: textures.explosion});
+
         websock = new WebSocket("ws://" + location.hostname + ":3000/");
 
         dyslexiaFont(localStorage.dyslexic == "true");
@@ -699,8 +732,9 @@ $(() => {
                     delete bullets[msg.id];
                     break;
                 case 8:
-                    mines[msg.id].delete();
-                    delete mines[msg.id];
+                    mines[msg.id].explode();
+                    // Don't delete here, simply play the explosion
+                    // and wait for the mine to queue deletion
                     break;
                 case 9:
                     currentMap.tiles[msg.y][msg.x].destroy();
