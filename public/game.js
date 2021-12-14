@@ -9,7 +9,7 @@ $(() => {
     const texLoader = new THREE.TextureLoader();
 
     const materials = {};
-    const names = {};
+    const players = {};
     const textures = {};
     var websock = null;
 
@@ -166,7 +166,7 @@ $(() => {
 
             // Create name geometry
             this.name = name;
-            names[id] = name;
+            players[id] = {name, team};
             if (name != "") {
                 this.nametag = document.createElement('p');
                 this.nametag.innerText = name;
@@ -640,38 +640,56 @@ $(() => {
                         localTank = null;
                         $("#menu").show();
                     }
-                    console.log(names[msg.killer] + " killed " + names[msg.id] + " with " + msg.method);
+                    if(msg.method != "disconnect") {
+                        console.log(players[msg.killer].name + " killed " + players[msg.id].name + " with " + msg.method);
 
-                    let killfeedEntry = document.createElement("div");
-                    killfeedEntry.className = "killfeedEntry";
+                        let killfeedEntry = document.createElement("div");
+                        killfeedEntry.className = "killfeedEntry";
 
-                    let victim = document.createElement("div");
-                    victim.innerText = names[msg.id];
-                    victim.className = "killfeedName";
-                    victim.style.color = "#" + (tanks[msg.id].team == teams.green ? teams.green.color.toString(16) : teams.red.color.toString(16));
+                        let victim = undefined;
+                        if(msg.killer != msg.id) {
+                            victim = document.createElement("div");
+                            victim.innerText = players[msg.id].name;
+                            victim.className = "killfeedName";
+                            victim.style.color = "#" + players[msg.id].team.color.toString(16);
+                        }
 
-                    // TODO: Method icons
-                    let method = document.createElement("div");
-                    method.innerText = "<" + msg.method + ">";
-                    method.className = "killfeedMethod";
+                        let method = document.createElement("img");
+                        switch(msg.method) {
+                            case "bullet":
+                                method.src = "/textures/bullet.png";
+                                break;
+                            case "mine":
+                                method.src = "/textures/mine.png";
+                                break;
+                            case "ricochet":
+                                method.src = "/textures/ricochet.png";
+                                break;
+                            default:
+                                // Wut
+                                break;
+                        }
+                        method.className = "killfeedMethod";
 
-                    let killer = document.createElement("div");
-                    killer.innerText = names[msg.killer];
-                    killer.className = "killfeedName";
-                    killer.style.color = "#" + (tanks[msg.killer].team == teams.green ? teams.green.color.toString(16) : teams.red.color.toString(16));
+                        let killer = document.createElement("div");
+                        killer.innerText = players[msg.killer].name;
+                        killer.className = "killfeedName";
+                        killer.style.color = "#" + players[msg.killer].team.color.toString(16);
 
-                    killfeedEntry.appendChild(killer);
-                    killfeedEntry.appendChild(method);
-                    killfeedEntry.appendChild(victim);
+                        killfeedEntry.appendChild(killer);
+                        killfeedEntry.appendChild(method);
+                        if(victim) {
+                            killfeedEntry.appendChild(victim);
+                        }
 
+                        if (killfeed.length >= 4) {
+                            killfeed[0].remove();
+                            killfeed.shift();
+                        }
 
-                    if (killfeed.length >= 4) {
-                        killfeed[0].remove();
-                        killfeed.shift();
+                        killfeed.push(killfeedEntry);
+                        $("#killfeed").append(killfeedEntry);
                     }
-                    
-                    killfeed.push(killfeedEntry);
-                    document.getElementById("killfeed").appendChild(killfeedEntry);
 
                     tanks[msg.id].delete();
                     delete tanks[msg.id];

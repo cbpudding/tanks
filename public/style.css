@@ -44,33 +44,37 @@
 
 #killfeed {
     height: 25%;
-    left: 67%;
+    left: 0;
     overflow: hidden;
     position: absolute;
     top: 0;
-    width: 33%;
+    user-select: none;
+    width: 100%;
     z-index: 2;
 }
 
 .killfeedEntry {
+    background-color: #ffe6cc;
+    border-radius: 10px;
+    float: right;
+    margin-top: 10px;
     overflow: hidden;
     width: fit-content;
-    background-color: #FFE6CC;
-    border-radius: 10px;
-    margin-top: 10px;
-    float: right;
 }
 
 .killfeedMethod {
     display: inline-block;
-    margin-right: 10px;
-    margin-left: 10px;
+    height: 2em;
+    vertical-align: middle;
+    width: auto;
 }
 
 .killfeedName {
     display: inline-block;
     margin-right: 10px;
     margin-left: 10px;
+    max-width: 32em;
+    overflow: hidden;
 }
 
 #main {
