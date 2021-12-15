@@ -174,6 +174,8 @@ $(() => {
             } else if (this.exploded) {
                 this.model.rotation.y += Math.PI / 4 * deltatime;
                 this.model.material.opacity -= 2 * deltatime;
+                let scale = Math.min(1, 1 - this.model.material.opacity);
+                this.model.scale.set(scale, scale, scale);
                 if (this.model.material.opacity <= 0) {
                     this.queueDeletion = true;
                 }
@@ -323,7 +325,14 @@ $(() => {
 
         destroy() {
             if (this.id == 1 && !this.destroyed) {
+                let x = this.object.position.x;
+                let y = this.object.position.z;
                 scene.remove(this.object);
+                this.object = models.presentdestroyed.clone();
+                this.object.position.x = x;
+                this.object.position.z = y;
+                
+                scene.add(this.object);
                 this.destroyed = true;
             }
         }
@@ -598,6 +607,7 @@ $(() => {
         loadModel("present", "models/present.glb"),
         loadModel("presentblue", "models/present_blue.glb"),
         loadModel("presentgreen", "models/present_green.glb"),
+        loadModel("presentdestroyed", "models/present_destroyed.glb"),
         loadModel("bullet", "models/projectile.glb"),
         loadModel("wall", "models/rockwall.glb"),
         loadModel("base", "models/tank_bottom.glb"),
