@@ -15,7 +15,7 @@ const bullets = {};
 const mines = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/debug.csv"];
+let available_maps = ["maps/fortress.csv"];
 let maps = {};
 var team = 0;
 let spawns = {

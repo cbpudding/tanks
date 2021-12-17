@@ -104,9 +104,11 @@ $(() => {
                         }
                         break;
                     case 3:
-                        return 3; // Highest priority
+                        if (wall_type == 0) wall_type = 3;
+                        break;
                     case 4:
-                        return 4; // Highest priority
+                        if (wall_type == 0) wall_type = 4;
+                        break;
                     }
                 }
             }
@@ -149,7 +151,8 @@ $(() => {
             this.model.material.transparent = true;
             this.model.material.opacity = 1;
             scene.add(this.model);
-            
+
+            this.ticking = false;
             this.exploded = true;
         }
 
