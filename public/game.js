@@ -7,6 +7,8 @@ $(() => {
     const renderer = new THREE.WebGLRenderer({canvas});
     const gltfLoader = new THREE.GLTFLoader();
     const texLoader = new THREE.TextureLoader();
+    const audioListener = new THREE.AudioListener();
+    const audioLoader = new THREE.AudioLoader();
 
     const materials = {};
     const players = {};
@@ -356,6 +358,7 @@ $(() => {
     var me = null;
     const mines = {};
     const models = {};
+    const sounds = {};
     const tanks = {};
     const teams = {
         green: new Team(0x14430d),
@@ -464,6 +467,7 @@ $(() => {
     }
 
     function joinGame() {
+        audioListener.context.resume();
         $("#menu").hide();
         $("#nickname").blur();
         let name = $("#nickname").val() || "Anonymous";
@@ -491,6 +495,18 @@ $(() => {
         return new Promise(resolve => {
             textures[name] = texLoader.load(path);
             resolve();
+        });
+    }
+
+    function loadSound(name, path) {
+        return new Promise(resolve => {
+            let sound = new THREE.Audio(audioListener);
+            audioLoader.load(path, buffer => {
+                sound.setBuffer(buffer);
+                sound.setVolume(0.5);
+                sounds[name] = sound;
+                resolve();
+            });
         });
     }
 
@@ -598,6 +614,7 @@ $(() => {
     lamp.position.x = 1;
     lamp.position.z = 1;
     scene.add(lamp);
+    camera.add(audioListener);
     camera.position.y = 20;
     camera.position.z = 16;
     camera.rotation.x = -50 * (Math.PI / 180);
@@ -712,7 +729,7 @@ $(() => {
                                 method.src = "/textures/ricochet.png";
                                 break;
                             default:
-                                // Wut
+                                method.src = "/textures/WAT.png";
                                 break;
                         }
                         method.className = "killfeedMethod";
