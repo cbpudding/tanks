@@ -19,11 +19,19 @@ $(() => {
     function playSound(name, x, y) {
         let sound = new THREE.PositionalAudio(audioListener);
         sound.setBuffer(sounds[name]);
-        sound.setRefDistance(Math.sqrt(Math.pow(camera.position.x - x, 2) + Math.pow(camera.position.z + y, 2)));
-        sound.position.x = x;
-        sound.position.y = 20;
-        sound.position.z = -y + 16;
+        // TODO: Decide on a proper distance until major falloff
+        sound.setRefDistance(10);
+        sound.position.set(x, 0, y);
+
+        // TODO: Less hackish way to spawn and then remove sound
+        scene.add(sound);
+        sound.onEnded = () => scene.remove(sound);
+        
         sound.play();
+
+        // TODO: Remove sound debug when happy (also helps confirm proper removal of sound)
+        const helper = new THREE.PositionalAudioHelper( sound, 1 );
+        sound.add( helper );
     }
 
     class Bullet {
