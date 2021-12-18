@@ -1,5 +1,6 @@
 const Express = require("express");
 const Filesystem = require("fs");
+const Https = require("https");
 const Uuid = require("uuid");
 const WebSocket = require("ws");
 
@@ -62,7 +63,13 @@ for (let map of available_maps) {
 
 console.log("Loaded maps: " + Object.keys(maps).join(", "));
 
-const wss = new WebSocket.Server({server: app.listen(3000)});
+const wss = new WebSocket.Server({server: Https.createServer(
+    {
+        key: Filesystem.readFileSync("server.key"),
+        cert: Filesystem.readFileSync("server.crt"),
+    },
+    app
+).listen(3000)});
 
 /* Message types:
 Type 0 - Server tick
