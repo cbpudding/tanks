@@ -146,7 +146,7 @@ $(() => {
             this.model.position.x = this.x;
             this.model.position.z = this.y;
             this.model.rotation.x = -Math.PI / 4; // Hide seam
-            this.model.rotation.y = Math.random()*Math.PI;
+            this.model.rotation.y = Math.random() * Math.PI;
 
             this.model.material.transparent = true;
             this.model.material.opacity = 1;
@@ -175,7 +175,7 @@ $(() => {
                     }
                 }
             } else if (this.exploded) {
-                this.model.rotation.y += Math.PI / 4 * deltatime;
+                this.model.rotation.y += Math.PI * deltatime;
                 this.model.material.opacity -= 2 * deltatime;
                 let scale = Math.min(1, 1 - this.model.material.opacity);
                 this.model.scale.set(scale, scale, scale);
