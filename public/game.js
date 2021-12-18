@@ -21,7 +21,7 @@ $(() => {
         sound.setBuffer(sounds[name]);
         // TODO: Decide on a proper distance until major falloff
         sound.setRefDistance(10);
-        sound.position.set(x, 0, y);
+        sound.position.set(x, 20, y + 16);
 
         // TODO: Less hackish way to spawn and then remove sound
         scene.add(sound);
