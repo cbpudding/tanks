@@ -83,6 +83,7 @@ wss.on("connection", conn => {
     conn.challenge = Math.floor(Math.random() * 1000);
     conn.direction = {x: 0, y: 0};
     conn.id = Uuid.v4();
+    conn.killstreak = 0;
     conn.last = Date.now();
     conn.mines = 2;
     conn.name = "Unknown";
@@ -240,7 +241,7 @@ wss.on("connection", conn => {
                 break;
         }
         wss.clients.forEach(client => {
-            client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect"}));
+            client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect", killstreak: 0}));
         });
     });
     conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0]}));
@@ -256,11 +257,15 @@ function destroyBullet(id) {
     delete bullets[id];
 }
 
-function killTank(id, killer, method) {
-    let payload = JSON.stringify({type: 4, id, killer, method});
+function killTank(id, killer, method, kills) {
+    let killstreak = killer == id ? 0 : kills + 1;
+    let payload = JSON.stringify({type: 4, id, killer, method, killstreak});
     wss.clients.forEach(client => {
         if(client.id == id) {
             client.alive = false;
+            client.killstreak = 0;
+        } else if(client.id == killer) {
+            client.killstreak++;
         }
         client.send(payload);
     });
@@ -276,7 +281,13 @@ function detonateMine(id) {
             if(client.alive) {
                 let distance = Math.sqrt(Math.pow(client.x - mines[id].x, 2) + Math.pow(client.y - mines[id].y, 2));
                 if(distance < 1.5) {
-                    killTank(client.id, mines[id].owner, "mine");
+                    var killstreak = 0;
+                    wss.clients.forEach(killer => {
+                        if(killer.id == mines[id].owner) {
+                            killstreak = killer.killstreak;
+                        }
+                    });
+                    killTank(client.id, mines[id].owner, "mine", killstreak);
                 }
             }
         }
@@ -297,8 +308,6 @@ function detonateMine(id) {
             }
         }
     });
-
-
 
     delete mines[id];
 }
@@ -358,7 +367,13 @@ function gameTick() {
                     if(tank.alive && bullets[id]) {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.6) {
-                            killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet");
+                            var killstreak = 0;
+                            wss.clients.forEach(killer => {
+                                if(killer.id == bullets[id].owner) {
+                                    killstreak = killer.killstreak;
+                                }
+                            });
+                            killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
                             destroyBullet(id);
                         }
                     }
@@ -475,7 +490,7 @@ setInterval(() => {
                 }
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
-                        player.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect"}));
+                        player.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect", killstreak: 0}));
                     }
                 });
                 client.terminate();

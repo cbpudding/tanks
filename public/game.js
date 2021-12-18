@@ -12,8 +12,19 @@ $(() => {
 
     const materials = {};
     const players = {};
+    const sounds = {};
     const textures = {};
     var websock = null;
+
+    function playSound(name, x, y) {
+        let sound = new THREE.PositionalAudio(audioListener);
+        sound.setBuffer(sounds[name]);
+        sound.setRefDistance(Math.sqrt(Math.pow(camera.position.x - x, 2) + Math.pow(camera.position.z + y, 2)));
+        sound.position.x = x;
+        sound.position.y = 20;
+        sound.position.z = -y + 16;
+        sound.play();
+    }
 
     class Bullet {
         constructor(id, x, y) {
@@ -156,6 +167,8 @@ $(() => {
 
             this.ticking = false;
             this.exploded = true;
+
+            playSound("boom", this.x, this.y);
         }
 
         delete() {
@@ -358,7 +371,6 @@ $(() => {
     var me = null;
     const mines = {};
     const models = {};
-    const sounds = {};
     const tanks = {};
     const teams = {
         green: new Team(0x14430d),
@@ -491,22 +503,19 @@ $(() => {
         });
     }
 
+    function loadSound(name, path) {
+        return new Promise(resolve => {
+            audioLoader.load(path, buffer => {
+                sounds[name] = buffer;
+                resolve();
+            });
+        });
+    }
+
     function loadTexture(name, path) {
         return new Promise(resolve => {
             textures[name] = texLoader.load(path);
             resolve();
-        });
-    }
-
-    function loadSound(name, path) {
-        return new Promise(resolve => {
-            let sound = new THREE.Audio(audioListener);
-            audioLoader.load(path, buffer => {
-                sound.setBuffer(buffer);
-                sound.setVolume(0.5);
-                sounds[name] = sound;
-                resolve();
-            });
         });
     }
 
@@ -547,7 +556,7 @@ $(() => {
         }
         for(let id in mines) {
             mines[id].update(deltatime);
-            if (mines[id].queueDeletion == true) {
+            if (mines[id].queueDeletion) {
                 mines[id].delete();
                 delete mines[id];
             }
@@ -570,8 +579,8 @@ $(() => {
     function shoot() {
         if (localTank) {
             websock.send(JSON.stringify({
-                    type: 5,
-                    rot: localTank.cannonAngle
+                type: 5,
+                rot: localTank.cannonAngle
             }));
         }
     }
@@ -632,6 +641,9 @@ $(() => {
         loadModel("wall", "models/rockwall.glb"),
         loadModel("base", "models/tank_bottom.glb"),
         loadModel("cannon", "models/tank_top.glb"),
+        loadSound("boom", "sounds/boom.ogg"),
+        loadSound("ricochet", "sounds/ricochet.ogg"),
+        loadSound("shoot", "sounds/shoot.ogg"),
         loadTexture("barrierblue", "textures/blue_barrier.png"),
         loadTexture("barriergreen", "textures/green_barrier.png"),
         loadTexture("barrierred", "textures/red_barrier.png"),
@@ -679,6 +691,7 @@ $(() => {
                     for (let id in msg.bullets) {
                         if(!bullets[id]) {
                             new Bullet(id, msg.bullets[id].x, msg.bullets[id].y);
+                            playSound("shoot", msg.bullets[id].x, msg.bullets[id].y);
                         }
 
                         bullets[id].rotation = msg.bullets[id].rot;
@@ -702,6 +715,13 @@ $(() => {
                     if(msg.id == me) {
                         localTank = null;
                         $("#menu").show();
+                    }
+                    if(msg.killstreak >= 50) {
+                        if(tanks[msg.killer].nametag) {
+                            if(!tanks[msg.killer].nametag.classList.contains("rainbow")) {
+                                tanks[msg.killer].nametag.classList.add("rainbow");
+                            }
+                        }
                     }
                     if(msg.method != "disconnect") {
                         console.log(players[msg.killer].name + " killed " + players[msg.id].name + " with " + msg.method);
@@ -814,11 +834,6 @@ $(() => {
         dyslexiaFont(localStorage.dyslexic == "true");
     });
     $("#dyslexic").prop("checked", localStorage.dyslexic == "true");
-    $("#recolor").click(() => {
-        localStorage.recolor = $("#recolor").prop("checked");
-        recolorGreen(localStorage.recolor == "true");
-    });
-    $("#recolor").prop("checked", localStorage.recolor == "true");
     $("#nickname").val(localStorage.nickname || "");
     $("#nickname").focus();
 });
