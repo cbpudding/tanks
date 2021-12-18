@@ -43,6 +43,9 @@
 }
 
 #killfeed {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 2px;
     height: 25%;
     left: 0;
     overflow: hidden;
@@ -54,9 +57,13 @@
 }
 
 .killfeedEntry {
+    align-self: flex-end;
     background-color: #ffe6cc;
     border-radius: 10px;
+    display: flex;
+    flex-direction: row;
     float: right;
+    height: fit-content;
     margin-top: 10px;
     overflow: hidden;
     width: fit-content;
