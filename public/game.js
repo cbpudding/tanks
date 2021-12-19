@@ -118,11 +118,7 @@ $(() => {
                         wall_type =  1;
                         break;
                     case 2:
-                        // Check if within 0.475 units (overlapping hole)
-                        let dist = Math.sqrt((Math.pow(check_x - x, 2) + Math.pow(-check_y - y, 2)));
-                        if (dist <= 0.975 ) {
-                            wall_type = 2; // Because it is overwritten by a wall if found
-                        }
+                        wall_type = 2; // Because it is overwritten by a wall if found
                         break;
                     case 3:
                         if (wall_type == 0) wall_type = 3;
@@ -661,7 +657,7 @@ $(() => {
         materials.greenbarrier = new THREE.MeshPhongMaterial({map: textures.barriergreen});
         materials.explosion = new THREE.MeshPhongMaterial({map: textures.explosion});
 
-        websock = new WebSocket("ws://" + location.hostname + ":3000/");
+        websock = new WebSocket("wss://" + location.hostname + ":3000/");
 
         dyslexiaFont(localStorage.dyslexic == "true");
         recolorGreen(localStorage.recolor == "true");

@@ -140,11 +140,7 @@ wss.on("connection", conn => {
                                                         has_collided = true;
                                                         break;
                                                     case 3:
-                                                        let dist = Math.sqrt((Math.pow(check_x - msg.x, 2) + Math.pow(-check_y - msg.y, 2)));
-                                                        // Check if close enough to hole to collide
-                                                        if (dist <= 0.975) {
-                                                            has_collided = true;
-                                                        }
+                                                        has_collided = true;
                                                         break;
                                                     case 6:
                                                         if (conn.team == "green") {
