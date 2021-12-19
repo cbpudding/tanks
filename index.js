@@ -199,11 +199,11 @@ wss.on("connection", conn => {
                         break;
                     case 5:
                         if(typeof msg.rot === "number") {
+                            let x = conn.x + Math.cos(msg.rot);
+                            let y = conn.y - Math.sin(msg.rot);
                             if(conn.bullets > 0) {
                                 conn.bullets--;
                                 const id = Uuid.v4();
-                                let x = conn.x + Math.cos(msg.rot);
-                                let y = conn.y - Math.sin(msg.rot);
                                 bullets[id] = {
                                     created: Date.now(),
                                     owner: conn.id,
@@ -213,9 +213,18 @@ wss.on("connection", conn => {
                                     x,
                                     y
                                 };
-                                conn.send(JSON.stringify({type: 11, success: true}));
+                                wss.clients.forEach(client => {
+                                    if(client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({type: 11, success: true, x, y}));
+                                    }
+                                });
+
                             } else {
-                                conn.send(JSON.stringify({type: 11, success: false}));
+                                wss.clients.forEach(client => {
+                                    if(client.readyState === WebSocket.OPEN) {
+                                        client.send(JSON.stringify({type: 11, success: false, x, y}));
+                                    }
+                                });
                             }
                         }
                         break;
@@ -354,7 +363,7 @@ function gameTick() {
     }
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({challenge: client.challenge, clip: client.bullets, ...payload}));
+            client.send(JSON.stringify({challenge: client.challenge, clip: client.bullets, explosives: client.mines, ...payload}));
         }
     });
     for(let id in bullets) {
@@ -439,6 +448,12 @@ function gameTick() {
                         if (!bullets[id].ricochet) {
                             destroyBullet(id);
                         } else {
+                            wss.clients.forEach(client => {
+                                if(client.readyState === WebSocket.OPEN) {
+                                    client.send(JSON.stringify({type: 10, x: bullets[id].x, y: bullets[id].y}));
+                                }
+                            });
+
                             bullets[id].ricochet = false;
                         }
                     }

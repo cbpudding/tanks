@@ -707,6 +707,26 @@ $(() => {
                         }
                         mines[id].ticking = msg.mines[id].ticking;
                     }
+
+                    // UI ammo display
+                    for(let i = 0; i < 7; i++) {
+                        let element = document.getElementById("bullet" + i);
+                        if (msg.clip > 0) {
+                            element.style.display = "inline";
+                            msg.clip--;
+                        } else {
+                            element.style.display = "none";
+                        }
+                    }
+                    for(let i = 0; i < 2; i++) {
+                        let element = document.getElementById("mine" + i);
+                        if (msg.explosives > 0) {
+                            element.style.display = "inline";
+                            msg.explosives--;
+                        } else {
+                            element.style.display = "none";
+                        }
+                    }
                     break;
                 case 2:
                     me = msg.id;
@@ -793,11 +813,12 @@ $(() => {
                     currentMap.tiles[msg.y][msg.x].destroy();
                     break;
                 case 10:
+                    console.log("supposed to play");
                     playSound("ricochet", msg.x, msg.y);
                     break;
                 case 11:
-                    if(!msg.success && localTank) {
-                        playSound("click", localTank.x, localTank.y);
+                    if(!msg.success) {
+                        playSound("click", msg.x, msg.y);
                     }
                     break;
             }

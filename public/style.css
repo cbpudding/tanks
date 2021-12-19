@@ -13,6 +13,11 @@
     src: url("/fonts/SigmarOne-Regular.ttf");
 }
 
+#ammo {
+    position: absolute;
+    z-index: 2;
+}
+
 #creators {
     color: green;
     font-family: SigmarOne;
