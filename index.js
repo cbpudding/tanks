@@ -382,10 +382,12 @@ function gameTick() {
                                     killstreak = killer.killstreak;
                                 }
                             });
-                            if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
-                                killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
+                            if(!(bullets[id].owner == tank.team && bullets[id].ricochet)) {
+                                if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
+                                    killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
+                                }
+                                destroyBullet(id);
                             }
-                            destroyBullet(id);
                         }
                     }
                 });

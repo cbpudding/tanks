@@ -643,6 +643,7 @@ $(() => {
         loadModel("cannon", "models/tank_top.glb"),
         loadSound("boom", "sounds/boom.ogg"),
         loadSound("click", "sounds/click.ogg"),
+        loadSound("ded", "sounds/ded.ogg"),
         loadSound("ricochet", "sounds/ricochet.ogg"),
         loadSound("shoot", "sounds/shoot.ogg"),
         loadTexture("barrierblue", "textures/blue_barrier.png"),
@@ -717,7 +718,7 @@ $(() => {
                         localTank = null;
                         $("#menu").show();
                     }
-                    if(msg.killstreak >= 50) {
+                    if(msg.killstreak >= 20) {
                         if(tanks[msg.killer].nametag) {
                             if(!tanks[msg.killer].nametag.classList.contains("rainbow")) {
                                 tanks[msg.killer].nametag.classList.add("rainbow");
@@ -725,6 +726,7 @@ $(() => {
                         }
                     }
                     if(msg.method != "disconnect") {
+                        playSound("ded", tanks[msg.id].x, tanks[msg.id].y);
                         console.log(players[msg.killer].name + " killed " + players[msg.id].name + " with " + msg.method);
 
                         let killfeedEntry = document.createElement("div");
@@ -789,6 +791,9 @@ $(() => {
                     break;
                 case 9:
                     currentMap.tiles[msg.y][msg.x].destroy();
+                    break;
+                case 10:
+                    playSound("ricochet", msg.x, msg.y);
                     break;
                 case 11:
                     if(!msg.success && localTank) {
