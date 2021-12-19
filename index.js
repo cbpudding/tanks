@@ -82,6 +82,8 @@ Type 6 - Destroy bullet
 Type 7 - Lay mine
 Type 8 - Destroy mine
 Type 9 - Destroy present
+Type 10 - Bullet ricochet
+Type 11 - Shoot response
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -207,9 +209,13 @@ wss.on("connection", conn => {
                                     owner: conn.id,
                                     ricochet: true,
                                     rot: msg.rot,
+                                    team: conn.team,
                                     x,
                                     y
                                 };
+                                conn.send(JSON.stringify({type: 11, success: true}));
+                            } else {
+                                conn.send(JSON.stringify({type: 11, success: false}));
                             }
                         }
                         break;
@@ -376,7 +382,9 @@ function gameTick() {
                                     killstreak = killer.killstreak;
                                 }
                             });
-                            killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
+                            if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
+                                killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
+                            }
                             destroyBullet(id);
                         }
                     }

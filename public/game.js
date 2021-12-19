@@ -28,10 +28,6 @@ $(() => {
         sound.onEnded = () => scene.remove(sound);
         
         sound.play();
-
-        // TODO: Remove sound debug when happy (also helps confirm proper removal of sound)
-        const helper = new THREE.PositionalAudioHelper( sound, 1 );
-        sound.add( helper );
     }
 
     class Bullet {
@@ -646,6 +642,7 @@ $(() => {
         loadModel("base", "models/tank_bottom.glb"),
         loadModel("cannon", "models/tank_top.glb"),
         loadSound("boom", "sounds/boom.ogg"),
+        loadSound("click", "sounds/click.ogg"),
         loadSound("ricochet", "sounds/ricochet.ogg"),
         loadSound("shoot", "sounds/shoot.ogg"),
         loadTexture("barrierblue", "textures/blue_barrier.png"),
@@ -792,6 +789,11 @@ $(() => {
                     break;
                 case 9:
                     currentMap.tiles[msg.y][msg.x].destroy();
+                    break;
+                case 11:
+                    if(!msg.success && localTank) {
+                        playSound("click", localTank.x, localTank.y);
+                    }
                     break;
             }
         };
