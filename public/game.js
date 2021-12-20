@@ -641,9 +641,11 @@ $(() => {
         loadModel("wall", "models/rockwall.glb"),
         loadModel("base", "models/tank_bottom.glb"),
         loadModel("cannon", "models/tank_top.glb"),
+        loadSound("bomb_planted", "sounds/bomb_planted.ogg"),
         loadSound("boom", "sounds/boom.ogg"),
         loadSound("click", "sounds/click.ogg"),
         loadSound("ded", "sounds/ded.ogg"),
+        loadSound("pop", "sounds/pop.ogg"),
         loadSound("ricochet", "sounds/ricochet.ogg"),
         loadSound("shoot", "sounds/shoot.ogg"),
         loadTexture("barrierblue", "textures/blue_barrier.png"),
@@ -704,6 +706,7 @@ $(() => {
                     for(let id in msg.mines) {
                         if(!mines[id]) {
                             mines[id] = new Mine(teams[msg.mines[id].team], msg.mines[id].ticking, msg.mines[id].x, msg.mines[id].y);
+                            playSound("bomb_planted", msg.mines[id].x, msg.mines[id].y);
                         }
                         mines[id].ticking = msg.mines[id].ticking;
                     }
@@ -801,6 +804,7 @@ $(() => {
                     delete tanks[msg.id];
                     break;
                 case 6:
+                    playSound("pop", bullets[msg.id].x, bullets[msg.id].y);
                     bullets[msg.id].delete();
                     delete bullets[msg.id];
                     break;
@@ -813,7 +817,6 @@ $(() => {
                     currentMap.tiles[msg.y][msg.x].destroy();
                     break;
                 case 10:
-                    console.log("supposed to play");
                     playSound("ricochet", msg.x, msg.y);
                     break;
                 case 11:
