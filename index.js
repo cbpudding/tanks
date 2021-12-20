@@ -373,7 +373,7 @@ function gameTick() {
             for(let other in bullets) {
                 if(id != other) {
                     let distance = Math.sqrt(Math.pow(bullets[id].x - bullets[other].x, 2) + Math.pow(bullets[id].y - bullets[other].y, 2));
-                    if(distance < 0.3) {
+                    if(distance < 0.2) {
                         destroyBullet(id);
                         destroyBullet(other);
                         break;
@@ -384,14 +384,15 @@ function gameTick() {
                 wss.clients.forEach(tank => {
                     if(tank.alive && bullets[id]) {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
-                        if(distance < 0.6) {
+                        if(distance < 0.5) {
                             var killstreak = 0;
                             wss.clients.forEach(killer => {
                                 if(killer.id == bullets[id].owner) {
                                     killstreak = killer.killstreak;
                                 }
                             });
-                            if(!(bullets[id].owner == tank.team && bullets[id].ricochet)) {
+                            console.log(killstreak); // DEBUG
+                            if(!(bullets[id].owner == tank.id && bullets[id].ricochet)) {
                                 if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
                                     killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
                                 }
