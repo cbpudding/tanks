@@ -710,21 +710,21 @@ $(() => {
 
                     // UI ammo display
                     for(let i = 0; i < 7; i++) {
-                        let element = document.getElementById("bullet" + i);
+                        let element = $("#bullet" + i);
                         if (msg.clip > 0) {
-                            element.style.display = "inline";
+                            element.css("opacity", 1);
                             msg.clip--;
                         } else {
-                            element.style.display = "none";
+                            element.css("opacity", 0.25);
                         }
                     }
                     for(let i = 0; i < 2; i++) {
-                        let element = document.getElementById("mine" + i);
+                        let element = $("#mine" + i);
                         if (msg.explosives > 0) {
-                            element.style.display = "inline";
+                            element.css("opacity", 1);
                             msg.explosives--;
                         } else {
-                            element.style.display = "none";
+                            element.css("opacity", 0.25);
                         }
                     }
                     break;
