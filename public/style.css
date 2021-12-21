@@ -13,6 +13,36 @@
     src: url("/fonts/SigmarOne-Regular.ttf");
 }
 
+@keyframes rainbow {
+    0% {
+        text-shadow: -1px -1px 5px #ff0000, -1px 1px 5px #ff0000, 1px 1px 5px #ff0000, 1px -1px 5px #ff0000;
+    }
+
+    17% {
+        text-shadow: -1px -1px 5px #ffff00, -1px 1px 5px #ffff00, 1px 1px 5px #ffff00, 1px -1px 5px #ffff00;
+    }
+
+    33% {
+        text-shadow: -1px -1px 5px #00ff00, -1px 1px 5px #00ff00, 1px 1px 5px #00ff00, 1px -1px 5px #00ff00;
+    }
+
+    50% {
+        text-shadow: -1px -1px 5px #00ffff, -1px 1px 5px #00ffff, 1px 1px 5px #00ffff, 1px -1px 5px #00ffff;
+    }
+
+    67% {
+        text-shadow: -1px -1px 5px #0000ff, -1px 1px 5px #0000ff, 1px 1px 5px #0000ff, 1px -1px 5px #0000ff;
+    }
+
+    83% {
+        text-shadow: -1px -1px 5px #ff00ff, -1px 1px 5px #ff00ff, 1px 1px 5px #ff00ff, 1px -1px 5px #ff00ff;
+    }
+
+    100% {
+        text-shadow: -1px -1px 5px #ff0000, -1px 1px 5px #ff0000, 1px 1px 5px #ff0000, 1px -1px 5px #ff0000;
+    }
+}
+
 #ammo {
     position: absolute;
     z-index: 2;
@@ -148,6 +178,12 @@
     border-width: 0;
     padding: 8px;
     width: 100%;
+}
+
+.rainbow {
+    animation-name: rainbow;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
 }
 
 #scoreboard {
