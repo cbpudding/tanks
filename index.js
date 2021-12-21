@@ -19,6 +19,7 @@ const mines = {};
 let available_maps = ["maps/fortress.csv"];
 let maps = {};
 var team = 0;
+var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
 let spawns = {
     red: [],
     redInc: 0,
@@ -332,7 +333,7 @@ function detonateMine(id) {
 }
 
 function gameTick() {
-    let payload = {type: 0, tanks: {}, bullets: {}, mines: {}};
+    let payload = {type: 0, tanks: {}, bullets: {}, mines: {}, scores};
     let start = Date.now();
     wss.clients.forEach(client => {
         if(client.alive) {

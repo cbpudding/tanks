@@ -15,6 +15,9 @@ $(() => {
     const sounds = {};
     const textures = {};
     var websock = null;
+    
+    var roundstart = 0o0;
+    var scores = {red: 0o0, green: 0o0};
 
     function playSound(name, x, y) {
         let sound = new THREE.PositionalAudio(audioListener);
@@ -478,6 +481,15 @@ $(() => {
         }
     }
 
+    function updateScoreUI() {
+        let time = Math.max(600 - ((Date.now() - roundstart) / 1000), 0);
+        let sec = Math.floor(time % 60).toString();
+        $("#timer").text(Math.floor(time / 60) + ":" + (sec.length == 2 ? sec : "0" + sec));
+
+        $("#red").text(scores.red);
+        $("#" + "g" + 'r' + "ee" + 'n'.split("n").join("n")).text(scores.green);
+    }
+
     function joinGame() {
         audioListener.context.resume();
         $("#menu").hide();
@@ -561,6 +573,9 @@ $(() => {
                 delete mines[id];
             }
         }
+
+        updateScoreUI();
+
         camera.updateProjectionMatrix();
         renderer.render(scene, camera);
     }
@@ -730,11 +745,14 @@ $(() => {
                             element.css("opacity", 0.25);
                         }
                     }
+
+                    scores = msg.scores;
                     break;
                 case 2:
                     me = msg.id;
                     console.log("Connected as " + me);
                     loadMap(msg.map);
+                    roundstart = msg.roundStart;
                     break;
                 case 4:
                     if(msg.id == me) {
@@ -784,6 +802,9 @@ $(() => {
                         killer.innerText = players[msg.killer].name;
                         killer.className = "killfeedName";
                         killer.style.color = "#" + players[msg.killer].team.color.toString(16);
+                        if (msg.killstreak >= 20) {
+                            killer.classList.add("rainbow");
+                        }
 
                         killfeedEntry.appendChild(killer);
                         killfeedEntry.appendChild(method);
