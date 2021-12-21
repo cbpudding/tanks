@@ -150,6 +150,50 @@
     width: 100%;
 }
 
+#scoreboard {
+    height: 0.5in;
+    left: 12.5%;
+    position: absolute;
+    top: calc(calc(100% - 0.5in) - 2px);
+    width: 75%;
+    z-index: 2;
+}
+
+#scoreboard * {
+    border-color: black;
+    border-style: solid;
+    border-width: 1px;
+    overflow: none;
+    text-align: center;
+}
+
+#scoreboard #green {
+    background-color: #2d961d;
+    height: 100%;
+    left: 0;
+    position: absolute;
+    top: 0;
+    width: calc(100% / 3);
+}
+
+#scoreboard #red {
+    background-color: #ff1209;
+    height: 100%;
+    left: calc(calc(100% / 3) * 2);
+    position: absolute;
+    top: 0;
+    width: calc(100% / 3);
+}
+
+#scoreboard #timer {
+    background-color: lightgray;
+    height: 100%;
+    left: calc(100% / 3);
+    position: absolute;
+    top: 0;
+    width: calc(100% / 3);
+}
+
 #title {
     color: red;
     font-family: SigmarOne;

@@ -26,6 +26,7 @@ let spawns = {
     greenInc: 0
 };
 let presents = [];
+let roundStart = Date.now();
 
 for (let map of available_maps) {
     maps[map] = [];
@@ -262,7 +263,7 @@ wss.on("connection", conn => {
             client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect", killstreak: 0}));
         });
     });
-    conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0]}));
+    conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0], roundStart}));
 });
 
 function destroyBullet(id) {
@@ -391,7 +392,7 @@ function gameTick() {
                                     killstreak = killer.killstreak;
                                 }
                             });
-                            console.log(killstreak); // DEBUG
+                            console.log("Killstreak: " + killstreak); // DEBUG
                             if(!(bullets[id].owner == tank.id && bullets[id].ricochet)) {
                                 if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
                                     killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
@@ -476,7 +477,7 @@ function gameTick() {
         if(mines[id]) {
             for(let bid in bullets) {
                 let distance = Math.sqrt(Math.pow(mines[id].x - bullets[bid].x, 2) + Math.pow(mines[id].y - bullets[bid].y, 2));
-                if(distance < 0.75) {
+                if(distance < 0.6) {
                     destroyBullet(bid);
                     detonateMine(id);
                     break;
