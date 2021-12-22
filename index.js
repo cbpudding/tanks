@@ -52,7 +52,7 @@ for (let map of available_maps) {
                 // Green spawn
                 spawns.green.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
             } else if (id == 1) {
-                presents.push({x: parseInt(tile) + 1, y: parseInt(row) + 1, destroyed: false});
+                presents.push({x: parseInt(tile) + 1, y: parseInt(row) + 1, destroyed: false, destroyed_time: Date.now()});
             }
             temp.push(id);
         }
@@ -193,7 +193,7 @@ wss.on("connection", conn => {
 
                                 for(let i in presents) {
                                     if (presents[i].destroyed) {
-                                        conn.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y}));
+                                        conn.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y, destroyed: true}));
                                     }
                                 }
                             }
@@ -318,10 +318,11 @@ function detonateMine(id) {
 
                 if (distance < 1.5) {
                     presents[i].destroyed = true;
+                    presents[i].destroyed_time = Date.now();
 
                     wss.clients.forEach(client => {
                         if (client.readyState === WebSocket.OPEN) {
-                            client.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y}));
+                            client.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y, destroyed: true}));
                         }
                     })
                 }
@@ -499,6 +500,26 @@ function gameTick() {
                     }
                 }
             });
+        }
+    }
+
+    // Present regeneration
+    const regen_time = 20000; // 20 seconds
+    for(let id in presents) {
+        if (presents[id].destroyed && Date.now() - presents[id].destroyed_time >= regen_time) {
+            let tank_in_range = false;
+            wss.clients.forEach(tank => {
+                let distance = Math.sqrt(Math.pow(presents[id].x - tank.x, 2) + Math.pow(presents[id].y + tank.y, 2));
+                if(distance < 3) {
+                    tank_in_range = true;
+                }
+            });
+            if (!tank_in_range) {
+                presents[id].destroyed = false;
+                wss.clients.forEach(client => {
+                    client.send(JSON.stringify({type: 9, x: presents[id].x, y: presents[id].y, destroyed: false}));
+                });
+            }
         }
     }
     setTimeout(gameTick, 17 - (Date.now() - start));

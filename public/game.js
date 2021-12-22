@@ -357,6 +357,23 @@ $(() => {
                 this.destroyed = true;
             }
         }
+
+        regenerate() {
+            if (this.id == 1 && this.destroyed) {
+                let x = this.object.position.x;
+                let y = this.object.position.z;
+                scene.remove(this.object);
+                
+                const presents = ["present", "presentblue", "presentgreen"];
+                
+                this.object = models[presents[Math.floor(Math.random() * presents.length)]].clone();
+                this.object.position.x = x;
+                this.object.position.z = y;
+                scene.add(this.object);
+                
+                this.destroyed = false;
+            }
+        }
     }
 
     const bullets = {};
@@ -835,7 +852,11 @@ $(() => {
                     // and wait for the mine to queue deletion
                     break;
                 case 9:
-                    currentMap.tiles[msg.y][msg.x].destroy();
+                    if (msg.destroyed) {
+                        currentMap.tiles[msg.y][msg.x].destroy();
+                    } else {
+                        currentMap.tiles[msg.y][msg.x].regenerate();
+                    }
                     break;
                 case 10:
                     playSound("ricochet", msg.x, msg.y);
