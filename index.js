@@ -17,6 +17,7 @@ const mines = {};
 
 // Load in the maps for server-side collision checks
 let available_maps = ["maps/fortress.csv"];
+let current_map = 0;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
@@ -129,7 +130,7 @@ wss.on("connection", conn => {
                                             let has_collided = false;
                                             for(let check_x = Math.floor(msg.x); check_x <= Math.floor(msg.x + 0.95); check_x++) {
                                                 for(let check_y = -Math.ceil(msg.y); check_y <= -Math.ceil(msg.y - 0.95); check_y++) {
-                                                    switch(maps[available_maps[0]][check_y][check_x]) {
+                                                    switch(maps[available_maps[current_map]][check_y][check_x]) {
                                                     case 1:
                                                         let still_exists = true;
                                                         for (let i in presents) {
@@ -264,7 +265,7 @@ wss.on("connection", conn => {
             client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect", killstreak: 0}));
         });
     });
-    conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[0], roundStart}));
+    conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[current_map], roundStart}));
 });
 
 function destroyBullet(id) {
@@ -408,7 +409,7 @@ function gameTick() {
                     let check_collision = (x, y) => {
                         for(let check_x = Math.floor(x - 0.01); check_x <= Math.floor(x + 0.01); check_x++) {
                             for(let check_y = -Math.ceil(y + 0.01); check_y <= -Math.ceil(y - 0.01); check_y++) {
-                                switch(maps[available_maps[0]][check_y][check_x]) {
+                                switch(maps[available_maps[current_map]][check_y][check_x]) {
                                     case 1:
                                         let still_exists = true;
                                         for (let i in presents) {
@@ -522,6 +523,18 @@ function gameTick() {
             }
         }
     }
+
+    // Map switching
+    if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0) {
+        current_map = (current_map + 1) % available_maps.length;
+        roundStart = Date.now();
+        scores = {red: 0, green: 0};
+        wss.clients.forEach(client => {
+            client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
+            client.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect", killstreak: 0}));
+        });
+    }
+
     setTimeout(gameTick, 17 - (Date.now() - start));
 }
 

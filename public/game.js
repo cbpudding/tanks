@@ -131,6 +131,14 @@ $(() => {
 
             return wall_type;
         }
+
+        unload() {
+            for(let row of this.tiles) {
+                for(let tile of row) {
+                    tile.remove();
+                }
+            }
+        }
     }
 
     const mineColor = new THREE.MeshPhongMaterial({color: 0x777777});
@@ -313,7 +321,6 @@ $(() => {
                     break;
                 case 8:
                     // Heavy Snow
-                    break;
                 default:
                     // Ground
                     geometry = new THREE.PlaneGeometry(1, 1);
@@ -377,6 +384,13 @@ $(() => {
                 
                 this.destroyed = false;
             }
+        }
+
+        remove() {
+            if(this.child) {
+                this.object.remove(this.child);
+            }
+            scene.remove(this.object);
         }
     }
 
@@ -522,7 +536,7 @@ $(() => {
 
     function loadMap(path) {
         if(currentMap) {
-            // TODO: Unload the existing map
+            currentMap.unload();
         }
         currentMap = new Map(path);
     }
