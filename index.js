@@ -493,8 +493,8 @@ function gameTick() {
             for(let bid in bullets) {
                 let distance = Math.sqrt(Math.pow(mines[id].x - bullets[bid].x, 2) + Math.pow(mines[id].y - bullets[bid].y, 2));
                 if(distance < 0.6) {
-                    destroyBullet(bid);
                     mines[id].owner = bullets[bid].owner;
+                    destroyBullet(bid);
                     detonateMine(id);
                     break;
                 }
