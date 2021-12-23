@@ -414,7 +414,7 @@ function gameTick() {
                                 if(killer.id == bullets[id].owner) {
                                     killstreak = killer.killstreak;
                                     team = killer.team;
-                                    teamkill = killer.teamkill;
+                                    teamkill = killer.team == tank.team;
                                 }
                             });
                             if(!(bullets[id].owner == tank.id && bullets[id].ricochet)) {
