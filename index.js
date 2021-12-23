@@ -232,17 +232,19 @@ wss.on("connection", conn => {
                         }
                         break;
                     case 7:
-                        if(conn.mines > 0) {
-                            conn.mines--;
-                            const id = Uuid.v4();
-                            mines[id] = {
-                                created: Date.now(),
-                                owner: conn.id,
-                                team: conn.team,
-                                ticking: false,
-                                x: conn.x,
-                                y: conn.y
-                            };
+                        if(conn.alive) {
+                            if(conn.mines > 0) {
+                                conn.mines--;
+                                const id = Uuid.v4();
+                                mines[id] = {
+                                    created: Date.now(),
+                                    owner: conn.id,
+                                    team: conn.team,
+                                    ticking: false,
+                                    x: conn.x,
+                                    y: conn.y
+                                };
+                            }
                         }
                         break;
                 }
@@ -482,6 +484,7 @@ function gameTick() {
                 let distance = Math.sqrt(Math.pow(mines[id].x - bullets[bid].x, 2) + Math.pow(mines[id].y - bullets[bid].y, 2));
                 if(distance < 0.6) {
                     destroyBullet(bid);
+                    mines[id].owner = bullets[bid].owner;
                     detonateMine(id);
                     break;
                 }
