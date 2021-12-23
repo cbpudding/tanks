@@ -551,9 +551,15 @@ function gameTick() {
         current_map = (current_map + 1) % available_maps.length;
         roundStart = Date.now();
         scores = {red: 0, green: 0};
+        for(let id in bullets) {
+            destroyBullet(id);
+        }
+        for(let id in mines) {
+            detonateMine(id);
+        }
         wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
-            client.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect", killstreak: 0}));
+            killTank(client.id, client.id, "disconnect", 0, client.team, true);
         });
     }
 
