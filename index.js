@@ -16,17 +16,12 @@ const bullets = {};
 const mines = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/fortress.csv"];
-let current_map = 0;
+let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv"];
+let current_map = 1;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
-let spawns = {
-    red: [],
-    redInc: 0,
-    green: [],
-    greenInc: 0
-};
+let spawns = {};
 let presents = [];
 let roundStart = Date.now();
 
@@ -38,6 +33,15 @@ for (let map of available_maps) {
         .map(x => x.split(","));
     // Map borders
     maps[map].push(Array(read_map[0].length + 2).fill(2));
+
+    let tmp_spawns = {
+        red: [],
+        redInc: 0,
+        green: [],
+        greenInc: 0
+    };
+
+
     for (let row in read_map) {
         let temp = [2];
         for (let tile in read_map[row]) {
@@ -48,10 +52,10 @@ for (let map of available_maps) {
             // TODO: Locate team spawns and store the coordinates to each in a list for each team.
             if (id == 4) {
                 // Red spawn
-                spawns.red.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
+                tmp_spawns.red.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
             } else if (id == 5) {
                 // Green spawn
-                spawns.green.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
+                tmp_spawns.green.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
             } else if (id == 1) {
                 presents.push({x: parseInt(tile) + 1, y: parseInt(row) + 1, destroyed: false, destroyed_time: Date.now()});
             }
@@ -61,6 +65,7 @@ for (let map of available_maps) {
         temp = temp.concat(Array(padding).fill(2));
         maps[map].push(temp);
     }
+    spawns[map] = tmp_spawns;
     maps[map].push(Array(read_map[0].length + 2).fill(2));
 }
 
@@ -181,14 +186,17 @@ wss.on("connection", conn => {
                                 conn.name = msg.name;
                                 conn.bullets = 7;
                                 conn.mines = 2;
+
+                                let current = available_maps[current_map];
+
                                 if(conn.team == "red") {
-                                    let spawnNum = ++spawns.redInc % spawns.red.length;
-                                    conn.x = spawns.red[spawnNum].x;
-                                    conn.y = -spawns.red[spawnNum].y;
+                                    let spawnNum = ++spawns[current].redInc % spawns[current].red.length;
+                                    conn.x = spawns[current].red[spawnNum].x;
+                                    conn.y = -spawns[current].red[spawnNum].y;
                                 } else {
-                                    let spawnNum = ++spawns.greenInc % spawns.green.length;
-                                    conn.x = spawns.green[spawnNum].x;
-                                    conn.y = -spawns.green[spawnNum].y;
+                                    let spawnNum = ++spawns[current].greenInc % spawns[current].green.length;
+                                    conn.x = spawns[current].green[spawnNum].x;
+                                    conn.y = -spawns[current].green[spawnNum].y;
                                 }
                                 conn.alive = true;
 
