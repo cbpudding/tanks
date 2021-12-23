@@ -16,8 +16,8 @@ const bullets = {};
 const mines = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv"];
-let current_map = 1;
+let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv", "maps/gridlock.csv"];
+let current_map = 2;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
