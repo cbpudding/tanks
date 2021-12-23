@@ -275,6 +275,8 @@ $(() => {
         }
     }
 
+    materials.snow = new THREE.MeshPhongMaterial({color: 0xffffff});
+
     class Tile {
         constructor(id, x, y) {
             let geometry, material;
@@ -314,7 +316,7 @@ $(() => {
                     // Ground
                     geometry = new THREE.PlaneGeometry(1, 1);
                     geometry.rotateX(-Math.PI / 2);
-                    material = new THREE.MeshPhongMaterial({color: 0xffffff});
+                    material = materials.snow;
                     this.object = new THREE.Mesh(geometry, material);
                     break;
             }
@@ -691,8 +693,8 @@ $(() => {
 
         websock = new WebSocket("wss://" + location.hostname + ":3000/");
 
+        dimSnow(localStorage.dimSnow == "true");
         dyslexiaFont(localStorage.dyslexic == "true");
-        recolorGreen(localStorage.recolor == "true");
 
         websock.onmessage = event => {
             let msg = JSON.parse(event.data);
@@ -884,6 +886,12 @@ $(() => {
     $(window).on("mousemove", pointCannonAtMouse);
     $(window).on("resize", scaleDisplay);
 
+    function dimSnow(enabled) {
+        let color = enabled ? 0xabd8ff : 0xffffff;
+        materials.snow.color = new THREE.Color(color);
+        renderer.setClearColor(color);
+    }
+
     function dyslexiaFont(enabled) {
         if(enabled) {
             $("body").addClass("dyslexia");
@@ -892,25 +900,16 @@ $(() => {
         }
     }
 
-    function recolorGreen(enabled) {
-        if(enabled) {
-            teams.green.color = 0x00bfff;
-            teams.green.colorMaterial.color = new THREE.Color(0x00bfff);
-            $("#greenpreview").css("color", "deepskyblue");
-            materials.greenbarrier.map = textures.barrierblue;
-        } else {
-            teams.green.color = 0x14430d;
-            teams.green.colorMaterial.color = new THREE.Color(0x14430d);
-            $("#greenpreview").css("color", "green");
-            materials.greenbarrier.map = textures.barriergreen;
-        }
-    }
-
     $("#dyslexic").click(() => {
         localStorage.dyslexic = $("#dyslexic").prop("checked");
         dyslexiaFont(localStorage.dyslexic == "true");
     });
+    $("#snow").click(() => {
+        localStorage.dimSnow = $("#snow").prop("checked");
+        dimSnow(localStorage.dimSnow == "true");
+    });
     $("#dyslexic").prop("checked", localStorage.dyslexic == "true");
+    $("#snow").prop("checked", localStorage.dimSnow == "true");
     $("#nickname").val(localStorage.nickname || "");
     $("#nickname").focus();
 });
