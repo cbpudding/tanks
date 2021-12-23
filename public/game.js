@@ -295,7 +295,9 @@ $(() => {
                     break;
                 case 3:
                     // Hole
-                    this.object = models.hole.clone();
+                    this.object = models.hole_tile.clone();
+                    this.child = models.hole_hole.clone();
+                    this.object.add(this.child);
                     break;
                 case 6:
                     // Red Barrier
@@ -665,7 +667,8 @@ $(() => {
     camera.updateProjectionMatrix();
 
     Promise.all([
-        loadModel("hole", "models/hole.glb"),
+        loadModel("hole_hole", "models/hole_hole.glb"),
+        loadModel("hole_tile", "models/hole_tile.glb"),
         loadModel("mine", "models/mine.glb"),
         loadModel("present", "models/present.glb"),
         loadModel("presentblue", "models/present_blue.glb"),
@@ -693,6 +696,8 @@ $(() => {
 
         websock = new WebSocket("wss://" + location.hostname + ":3000/");
 
+        recolorModel(models.hole_hole, new THREE.MeshPhongMaterial({color: 0x000000}));
+        recolorModel(models.hole_tile, materials.snow);
         dimSnow(localStorage.dimSnow == "true");
         dyslexiaFont(localStorage.dyslexic == "true");
 
