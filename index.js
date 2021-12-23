@@ -201,33 +201,35 @@ wss.on("connection", conn => {
                         }
                         break;
                     case 5:
-                        if(typeof msg.rot === "number") {
-                            let x = conn.x + Math.cos(msg.rot);
-                            let y = conn.y - Math.sin(msg.rot);
-                            if(conn.bullets > 0) {
-                                conn.bullets--;
-                                const id = Uuid.v4();
-                                bullets[id] = {
-                                    created: Date.now(),
-                                    owner: conn.id,
-                                    ricochet: true,
-                                    rot: msg.rot,
-                                    team: conn.team,
-                                    x,
-                                    y
-                                };
-                                wss.clients.forEach(client => {
-                                    if(client.readyState === WebSocket.OPEN) {
-                                        client.send(JSON.stringify({type: 11, success: true, x, y}));
-                                    }
-                                });
+                        if(conn.alive) {
+                            if(typeof msg.rot === "number") {
+                                let x = conn.x + Math.cos(msg.rot);
+                                let y = conn.y - Math.sin(msg.rot);
+                                if(conn.bullets > 0) {
+                                    conn.bullets--;
+                                    const id = Uuid.v4();
+                                    bullets[id] = {
+                                        created: Date.now(),
+                                        owner: conn.id,
+                                        ricochet: true,
+                                        rot: msg.rot,
+                                        team: conn.team,
+                                        x,
+                                        y
+                                    };
+                                    wss.clients.forEach(client => {
+                                        if(client.readyState === WebSocket.OPEN) {
+                                            client.send(JSON.stringify({type: 11, success: true, x, y}));
+                                        }
+                                    });
 
-                            } else {
-                                wss.clients.forEach(client => {
-                                    if(client.readyState === WebSocket.OPEN) {
-                                        client.send(JSON.stringify({type: 11, success: false, x, y}));
-                                    }
-                                });
+                                } else {
+                                    wss.clients.forEach(client => {
+                                        if(client.readyState === WebSocket.OPEN) {
+                                            client.send(JSON.stringify({type: 11, success: false, x, y}));
+                                        }
+                                    });
+                                }
                             }
                         }
                         break;
