@@ -92,6 +92,7 @@ Type 8 - Destroy mine
 Type 9 - Destroy present
 Type 10 - Bullet ricochet
 Type 11 - Shoot response
+Type 12 - Victory!
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -290,9 +291,12 @@ function destroyBullet(id) {
     delete bullets[id];
 }
 
-function killTank(id, killer, method, kills) {
+function killTank(id, killer, method, kills, team, teamkill) {
     let killstreak = killer == id ? 0 : kills + 1;
     let payload = JSON.stringify({type: 4, id, killer, method, killstreak});
+    if(!teamkill) {
+        scores[team]++;
+    }
     wss.clients.forEach(client => {
         if(client.id == id) {
             client.alive = false;
@@ -314,13 +318,16 @@ function detonateMine(id) {
             if(client.alive) {
                 let distance = Math.sqrt(Math.pow(client.x - mines[id].x, 2) + Math.pow(client.y - mines[id].y, 2));
                 if(distance < 1.5) {
+                    var team, teamkill;
                     var killstreak = 0;
                     wss.clients.forEach(killer => {
                         if(killer.id == mines[id].owner) {
                             killstreak = killer.killstreak;
+                            team = killer.team;
+                            teamkill = killer.team == client.team;
                         }
                     });
-                    killTank(client.id, mines[id].owner, "mine", killstreak);
+                    killTank(client.id, mines[id].owner, "mine", killstreak, team, teamkill);
                 }
             }
         }
@@ -401,16 +408,18 @@ function gameTick() {
                     if(tank.alive && bullets[id]) {
                         let distance = Math.sqrt(Math.pow(bullets[id].x - tank.x, 2) + Math.pow(bullets[id].y - tank.y, 2));
                         if(distance < 0.5) {
+                            var team, teamkill;
                             var killstreak = 0;
                             wss.clients.forEach(killer => {
                                 if(killer.id == bullets[id].owner) {
                                     killstreak = killer.killstreak;
+                                    team = killer.team;
+                                    teamkill = killer.teamkill;
                                 }
                             });
-                            console.log("Killstreak: " + killstreak); // DEBUG
                             if(!(bullets[id].owner == tank.id && bullets[id].ricochet)) {
                                 if(bullets[id].team != tank.team || bullets[id].owner == tank.id) {
-                                    killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak);
+                                    killTank(tank.id, bullets[id].owner, bullets[id].ricochet ? "bullet" : "ricochet", killstreak, team, teamkill);
                                 }
                                 destroyBullet(id);
                             }
