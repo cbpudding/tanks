@@ -16,8 +16,8 @@ const bullets = {};
 const mines = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv", "maps/gridlock.csv"];
-let current_map = 2;
+let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv", "maps/gridlock.csv", "maps/bigmap.csv"];
+let current_map = 0;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
@@ -49,7 +49,6 @@ for (let map of available_maps) {
             if (id < 0) {
                 id = 0
             }
-            // TODO: Locate team spawns and store the coordinates to each in a list for each team.
             if (id == 4) {
                 // Red spawn
                 tmp_spawns.red.push({x: parseInt(tile) + 1, y: parseInt(row) + 1});
@@ -548,13 +547,11 @@ function gameTick() {
     }
 
     // Map switching
-    // TODO: Restore to 600
-    if(Math.max(20 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
+    if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
         current_map = (current_map + 1) % available_maps.length;
         roundStart = Date.now();
 
-        let winner = scores.red == scores.green ? "tie" :
-            (scores.red > scores.green ? "red" : "green");
+        let winner = scores.red > scores.green ? "red" : "green";
 
         scores = {red: 0, green: 0};
         for(let id in bullets) {
