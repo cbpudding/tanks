@@ -16,7 +16,7 @@ $(() => {
     const textures = {};
     var websock = null;
     
-    var roundstart = 0o0;
+    var roundstart = Date.now();
     var scores = {red: 0o0, green: 0o0};
 
     function playSound(name, x, y) {
@@ -517,12 +517,18 @@ $(() => {
     }
 
     function updateScoreUI() {
-        let time = Math.max(600 - ((Date.now() - roundstart) / 1000), 0);
+        let time = 600 - ((Date.now() - roundstart) / 1000);
+        if(time < 0) {
+            if(!$("#timer div").hasClass("overtime")) {
+                $("#timer div").addClass("overtime");
+            }
+            time = Math.abs(time);
+        }
         let sec = Math.floor(time % 60).toString();
-        $("#timer").text(Math.floor(time / 60) + ":" + (sec.length == 2 ? sec : "0" + sec));
+        $("#timer div").text(Math.floor(time / 60) + ":" + (sec.length == 2 ? sec : "0" + sec));
 
         $("#red").text(scores.red);
-        $("#" + "g" + 'r' + "ee" + 'n'.split("n").join("n")).text(scores.green);
+        $("#" + "g" + 'r' + "ee" + 'n'.split("n").join("n")).text(scores.green); // Why would you do this Nick? ~Alex
     }
 
     function joinGame() {
@@ -791,6 +797,10 @@ $(() => {
                     console.log("Connected as " + me);
                     loadMap(msg.map);
                     roundstart = msg.roundStart;
+                    if($("#timer div").hasClass("overtime")) {
+                        $("#timer div").removeClass("overtime");
+                    }
+                    $("#victory").hide();
                     break;
                 case 4:
                     if(msg.id == me) {
@@ -887,9 +897,33 @@ $(() => {
                         playSound("click", msg.x, msg.y);
                     }
                     break;
+                case 12:
+                    switch(msg.winner) {
+                        case "red":
+                            $("#victory").css("color", "#" + teams.red.color.toString(16));
+                            $("#victory").text("Red wins!");
+                            break;
+                        case "green":
+                            $("#victory").css("color", "#" + teams.green.color.toString(16));
+                            $("#victory").text("Green wins!");
+                            break;
+                        default:
+                            $("#victory").css("color", "white");
+                            $("#victory").text("Game over!");
+                            break;
+                    }
+                    $("#victory").show();
+                    break;
             }
         };
 
+        websock.addEventListener("close", () => {
+            $("#victory").css("color", "white");
+            $("#victory").text("Disconnected!");
+            $("#victory").show();
+        });
+
+        $("#victory").hide();
         renderScene();
     }).catch(error => console.error);
 

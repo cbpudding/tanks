@@ -13,6 +13,20 @@
     src: url("/fonts/SigmarOne-Regular.ttf");
 }
 
+@keyframes overtime {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
 @keyframes rainbow {
     0% {
         text-shadow: -1px -1px 5px #ff0000, -1px 1px 5px #ff0000, 1px 1px 5px #ff0000, 1px -1px 5px #ff0000;
@@ -78,9 +92,6 @@
 }
 
 #killfeed {
-    display: flex;
-    flex-direction: column;
-    grid-gap: 2px;
     height: 25%;
     left: 0;
     overflow: hidden;
@@ -142,11 +153,11 @@
 
 #menu {
     background-color: rgba(0, 0, 0, 0.75);
-    height: 100%;
+    height: 100vh;
     left: 0;
     position: absolute;
     top: 0;
-    width: 100%;
+    width: 100vw;
     z-index: 3;
 }
 
@@ -172,6 +183,13 @@
     padding: 8px;
     text-align: center;
     width: calc(100% - 16px);
+}
+
+.overtime {
+    animation-name: overtime;
+    animation-duration: 1s;
+    animation-iteration-count: infinite;
+    color: red;
 }
 
 #play {
@@ -235,6 +253,10 @@
     width: calc(100% / 3);
 }
 
+#scoreboard #timer div {
+    font-size: 1em;
+}
+
 #title {
     color: red;
     font-family: SigmarOne;
@@ -244,6 +266,22 @@
     margin: 0;
     text-align: center;
     user-select: none;
+}
+
+#victory {
+    background-color: rgba(0, 0, 0, 0.75);
+    color: white;
+    font-family: "SigmarOne";
+    font-size: 4em;
+    height: calc(50vh + 2em);
+    left: 0;
+    padding-top: calc(50vh - 2em);
+    position: absolute;
+    text-align: center;
+    top: 0;
+    user-select: none;
+    width: 100vw;
+    z-index: 4;
 }
 
 body {

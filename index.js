@@ -26,6 +26,7 @@ var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
 let spawns = {};
 let presents = [];
+let roundPlaying = true;
 let roundStart = Date.now();
 
 for (let map of available_maps) {
@@ -43,7 +44,6 @@ for (let map of available_maps) {
         green: [],
         greenInc: 0
     };
-
 
     for (let row in read_map) {
         let temp = [2];
@@ -186,31 +186,41 @@ wss.on("connection", conn => {
                         }
                         break;
                     case 3:
-                        if(typeof msg.name === "string") {
-                            if(msg.name.length <= 32) {
-                                conn.name = msg.name;
-                                conn.bullets = 7;
-                                conn.mines = 2;
+                        if(roundPlaying) {
+                            if(typeof msg.name === "string") {
+                                if(msg.name.length <= 32) {
+                                    conn.name = msg.name;
+                                    conn.bullets = 7;
+                                    conn.mines = 2;
 
-                                let current = available_maps[current_map];
+                                    let current = available_maps[current_map];
 
-                                if(conn.team == "red") {
-                                    let spawnNum = ++spawns[current].redInc % spawns[current].red.length;
-                                    conn.x = spawns[current].red[spawnNum].x;
-                                    conn.y = -spawns[current].red[spawnNum].y;
-                                } else {
-                                    let spawnNum = ++spawns[current].greenInc % spawns[current].green.length;
-                                    conn.x = spawns[current].green[spawnNum].x;
-                                    conn.y = -spawns[current].green[spawnNum].y;
-                                }
-                                conn.alive = true;
+                                    if(conn.team == "red") {
+                                        let spawnNum = ++spawns[current].redInc % spawns[current].red.length;
+                                        conn.x = spawns[current].red[spawnNum].x;
+                                        conn.y = -spawns[current].red[spawnNum].y;
+                                    } else {
+                                        let spawnNum = ++spawns[current].greenInc % spawns[current].green.length;
+                                        conn.x = spawns[current].green[spawnNum].x;
+                                        conn.y = -spawns[current].green[spawnNum].y;
+                                    }
+                                    conn.alive = true;
 
-                                for(let i in presents) {
-                                    if (presents[i].destroyed) {
-                                        conn.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y, destroyed: true}));
+                                    for(let i in presents) {
+                                        if (presents[i].destroyed) {
+                                            conn.send(JSON.stringify({type: 9, x: presents[i].x, y: presents[i].y, destroyed: true}));
+                                        }
                                     }
                                 }
                             }
+                        } else {
+                            conn.send(JSON.stringify({
+                                type: 4,
+                                id: conn.id,
+                                killer: conn.id,
+                                method: "disconnect",
+                                killstreak: 0
+                            }));
                         }
                         break;
                     case 5:
@@ -551,28 +561,32 @@ function gameTick() {
     }
 
     // Map switching
-    if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
-        current_map = (current_map + 1) % available_maps.length;
-        roundStart = Date.now();
+    if(roundPlaying) {
+        if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
+            roundPlaying = false;
+            current_map = (current_map + 1) % available_maps.length;
+            roundStart = Date.now();
 
-        let winner = scores.red > scores.green ? "red" : "green";
+            let winner = scores.red > scores.green ? "red" : "green";
 
-        scores = {red: 0, green: 0};
-        for(let id in bullets) {
-            destroyBullet(id);
+            scores = {red: 0, green: 0};
+            for(let id in bullets) {
+                destroyBullet(id);
+            }
+            for(let id in mines) {
+                detonateMine(id);
+            }
+            wss.clients.forEach(client => {
+                client.send(JSON.stringify({type: 12, winner}));
+                killTank(client.id, client.id, "disconnect", 0, client.team, true);
+            });
+            setTimeout(() => {
+                wss.clients.forEach(client => {
+                    client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
+                });
+                roundPlaying = true;
+            }, 3000);
         }
-        for(let id in mines) {
-            detonateMine(id);
-        }
-        wss.clients.forEach(client => {
-            client.send(JSON.stringify({type: 12, winner}));
-            client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
-            killTank(client.id, client.id, "disconnect", 0, client.team, true);
-        });
-    } else if (scores.red == scores.green && wss.clients.size != 0) {
-        wss.clients.forEach(client => {
-            client.send(JSON.stringify({type: 13}));
-        })
     }
 
     setTimeout(gameTick, 17 - (Date.now() - start));
