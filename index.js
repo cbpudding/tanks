@@ -568,8 +568,8 @@ function gameTick() {
             client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
             killTank(client.id, client.id, "disconnect", 0, client.team, true);
         });
-    } else if (scores.red == scores.green && wss.client.length != 0) {
-        wss.client.forEach(client => {
+    } else if (scores.red == scores.green && wss.clients.size != 0) {
+        wss.clients.forEach(client => {
             client.send(JSON.stringify({type: 13}));
         })
     }
