@@ -20,7 +20,7 @@ let available_maps = Filesystem
     .readFileSync("mapcycle.txt", {encoding: "utf8", flag: "r"})
     .split("\n")
     .map(name => "maps/" + name + ".csv");
-let current_map = 0;
+let current_map = 5;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick

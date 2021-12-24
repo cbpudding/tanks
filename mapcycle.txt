@@ -1,5 +1,6 @@
-fortress
-arena_tang01
-gridlock
+arena
 bigmap
 brazil
+fortress
+gridlock
+maze
