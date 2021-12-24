@@ -92,6 +92,9 @@
 }
 
 #killfeed {
+    display: flex;
+    flex-direction: column;
+    grid-gap: 2px;
     height: 25%;
     left: 0;
     overflow: hidden;
