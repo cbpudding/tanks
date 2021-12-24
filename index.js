@@ -16,7 +16,10 @@ const bullets = {};
 const mines = {};
 
 // Load in the maps for server-side collision checks
-let available_maps = ["maps/fortress.csv", "maps/arena_tang01.csv", "maps/gridlock.csv", "maps/bigmap.csv"];
+let available_maps = Filesystem
+    .readFileSync("mapcycle.txt", {encoding: "utf8", flag: "r"})
+    .split("\n")
+    .map(name => "maps/" + name + ".csv");
 let current_map = 0;
 let maps = {};
 var team = 0;
@@ -46,8 +49,9 @@ for (let map of available_maps) {
         let temp = [2];
         for (let tile in read_map[row]) {
             let id = parseInt(read_map[row][tile], 10) || 0;
+            id &= ~((1 << 29) | (1 << 30)); // Ignore rotation bits from tiled
             if (id < 0) {
-                id = 0
+                id = 0;
             }
             if (id == 4) {
                 // Red spawn
