@@ -93,6 +93,7 @@ Type 9 - Destroy present
 Type 10 - Bullet ricochet
 Type 11 - Shoot response
 Type 12 - Victory!
+Type 13 - OVERTIME!
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -547,9 +548,14 @@ function gameTick() {
     }
 
     // Map switching
-    if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0) {
+    // TODO: Restore to 600
+    if(Math.max(20 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
         current_map = (current_map + 1) % available_maps.length;
         roundStart = Date.now();
+
+        let winner = scores.red == scores.green ? "tie" :
+            (scores.red > scores.green ? "red" : "green");
+
         scores = {red: 0, green: 0};
         for(let id in bullets) {
             destroyBullet(id);
@@ -558,9 +564,14 @@ function gameTick() {
             detonateMine(id);
         }
         wss.clients.forEach(client => {
+            client.send(JSON.stringify({type: 12, winner}));
             client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
             killTank(client.id, client.id, "disconnect", 0, client.team, true);
         });
+    } else if (scores.red == scores.green && wss.client.length != 0) {
+        wss.client.forEach(client => {
+            client.send(JSON.stringify({type: 13}));
+        })
     }
 
     setTimeout(gameTick, 17 - (Date.now() - start));
