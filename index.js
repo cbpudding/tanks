@@ -481,8 +481,8 @@ function gameTick() {
                         did_reflect = true;
                     }
 
-                    bullets[id].x += dx * 0.0625;
-                    bullets[id].y -= dy * 0.0625;
+                    bullets[id].x += dx * 0.125;
+                    bullets[id].y -= dy * 0.125;
 
                     if (did_reflect) {
                         if (!bullets[id].ricochet) {
@@ -589,7 +589,7 @@ function gameTick() {
         }
     }
 
-    setTimeout(gameTick, 17 - (Date.now() - start));
+    setTimeout(gameTick, 33 - (Date.now() - start));
 }
 
 setTimeout(gameTick, 0);
