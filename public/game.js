@@ -914,6 +914,10 @@ $(() => {
                     }
                     $("#victory").show();
                     break;
+                case 14:
+                    localTank.x = msg.x;
+                    localTank.y = msg.y;
+                    break;
             }
         };
 

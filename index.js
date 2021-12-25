@@ -20,7 +20,7 @@ let available_maps = Filesystem
     .readFileSync("mapcycle.txt", {encoding: "utf8", flag: "r"})
     .split("\n")
     .map(name => "maps/" + name + ".csv");
-let current_map = 2;
+let current_map = Math.floor(Math.random() * available_maps.length) % available_maps.length;
 let maps = {};
 var team = 0;
 var scores = {red: 0o0, green: 0o0}; // 0o0 what's this? - Nick
@@ -97,6 +97,7 @@ Type 10 - Bullet ricochet
 Type 11 - Shoot response
 Type 12 - Victory!
 Type 13 - OVERTIME!
+Type 14 - Local Tank Correction
 */
 wss.on("connection", conn => {
     conn.alive = false;
@@ -177,6 +178,8 @@ wss.on("connection", conn => {
                                                 if(Math.abs(conn.x - msg.x) <= 3 && Math.abs(conn.y - msg.y) <= 3) {
                                                     conn.x = msg.x;
                                                     conn.y = msg.y;
+                                                } else {
+                                                    conn.send(JSON.stringify({type: 14, x: conn.x, y: conn.y}));
                                                 }
                                             }
                                         }
