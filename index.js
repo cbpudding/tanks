@@ -469,13 +469,13 @@ function gameTick() {
                     // Auto-delete if outside of map
 
                     let did_reflect = false;
-                    if (check_collision(bullets[id].x + 0.5 + (dx * 0.0625), bullets[id].y - 0.5)) {
+                    if (check_collision(bullets[id].x + 0.5 + (dx * 0.125), bullets[id].y - 0.5)) {
                         // Flip x
                         bullets[id].rot = Math.PI - bullets[id].rot;
                         dx = -dx;
                         did_reflect = true;
                     }
-                    if (check_collision(bullets[id].x + 0.5, bullets[id].y - (dy * 0.0625) - 0.5)) {
+                    if (check_collision(bullets[id].x + 0.5, bullets[id].y - (dy * 0.125) - 0.5)) {
                         bullets[id].rot = -bullets[id].rot;
                         dy = -dy;
                         did_reflect = true;
