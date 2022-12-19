@@ -15,11 +15,11 @@ app.use(Express.static(__dirname + "/public"));
 const bullets = {};
 const mines = {};
 
+// Read the configuration file
+let config = JSON.parse(Filesystem.readFileSync("tanks.json"));
+
 // Load in the maps for server-side collision checks
-let available_maps = Filesystem
-    .readFileSync("mapcycle.txt", {encoding: "utf8", flag: "r"})
-    .split("\n")
-    .map(name => "maps/" + name + ".csv");
+let available_maps = config.maps.map(name => "maps/" + name + ".csv");
 let current_map = Math.floor(Math.random() * available_maps.length) % available_maps.length;
 let maps = {};
 var team = 0;
@@ -80,7 +80,7 @@ const wss = new WebSocket.Server({server: Https.createServer(
         cert: Filesystem.readFileSync("server.crt"),
     },
     app
-).listen(3000)});
+).listen(config.port)});
 
 /* Message types:
 Type 0 - Server tick
@@ -103,6 +103,7 @@ wss.on("connection", conn => {
     conn.alive = false;
     conn.base = 0;
     conn.bullets = 7;
+    conn.cannon = 0;
     conn.challenge = Math.floor(Math.random() * 1000);
     conn.direction = {x: 0, y: 0};
     conn.id = Uuid.v4();
@@ -292,7 +293,9 @@ wss.on("connection", conn => {
                 break;
         }
         wss.clients.forEach(client => {
-            client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect", killstreak: 0}));
+            if(client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({type: 4, id: conn.id, killer: conn.id, method: "disconnect", killstreak: 0}));
+            }
         });
     });
     conn.send(JSON.stringify({type: 2, id: conn.id, map: available_maps[current_map], roundStart}));

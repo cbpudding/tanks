@@ -1,0 +1,12 @@
+{
+    "maps": [
+        "arena",
+        "bigmap",
+        "brazil",
+        "fortress",
+        "gridlock",
+        "idontcarenow",
+        "maze"
+    ],
+    "port": 3000
+}

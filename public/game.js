@@ -918,6 +918,9 @@ $(() => {
                     localTank.x = msg.x;
                     localTank.y = msg.y;
                     break;
+                default:
+                    console.warn("Unknown type " + msg.type + " received from server!");
+                    break;
             }
         };
 
