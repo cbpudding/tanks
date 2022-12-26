@@ -374,7 +374,8 @@ function detonateMine(id) {
 }
 
 function gameTick() {
-    let payload = {type: 0, tanks: {}, bullets: {}, mines: {}, scores};
+    let sinceStart = Math.floor((Date.now() - roundStart) / 1000);
+    let payload = {type: 0, tanks: {}, bullets: {}, mines: {}, scores, sinceStart};
     let start = Date.now();
     wss.clients.forEach(client => {
         if(client.alive) {
@@ -568,27 +569,32 @@ function gameTick() {
 
     // Map switching
     if(roundPlaying) {
-        if(Math.max(600 - ((Date.now() - roundStart) / 1000), 0) == 0 && (scores.red != scores.green || wss.clients.length == 0)) {
+        let sinceStart = Math.floor((Date.now() - roundStart) / 1000);
+        if(((600 - sinceStart <= 0) && (scores.red != scores.green)) || (wss.clients.length == 0 || (900 - sinceStart <= 0))) {
             roundPlaying = false;
             current_map = (current_map + 1) % available_maps.length;
             roundStart = Date.now();
 
-            let winner = scores.red > scores.green ? "red" : "green";
+            let winner = scores.red != scores.green ? (scores.red > scores.green ? "red" : "green") : "tie";
 
+            // Reset the scoreboard
             scores = {red: 0, green: 0};
+            // Clear all the bullets and mines from the field
             for(let id in bullets) {
                 destroyBullet(id);
             }
             for(let id in mines) {
                 detonateMine(id);
             }
+            // Clear all the tanks from the field and display the victor
             wss.clients.forEach(client => {
                 client.send(JSON.stringify({type: 12, winner}));
                 killTank(client.id, client.id, "disconnect", 0, client.team, true);
             });
+            // Inform players of the new map
             setTimeout(() => {
                 wss.clients.forEach(client => {
-                    client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map], roundStart}));
+                    client.send(JSON.stringify({type: 2, id: client.id, map: available_maps[current_map]}));
                 });
                 roundPlaying = true;
             }, 3000);

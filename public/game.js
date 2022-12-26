@@ -16,7 +16,7 @@ $(() => {
     const textures = {};
     var websock = null;
     
-    var roundstart = Date.now();
+    var sinceStart = 0;
     var scores = {red: 0o0, green: 0o0};
 
     function playSound(name, x, y) {
@@ -517,18 +517,23 @@ $(() => {
     }
 
     function updateScoreUI() {
-        let time = 600 - ((Date.now() - roundstart) / 1000);
+        let time = 600 - sinceStart;
+        let isOvertime = $("#timer div").hasClass("overtime");
         if(time < 0) {
-            if(!$("#timer div").hasClass("overtime")) {
+            if(!isOvertime) {
                 $("#timer div").addClass("overtime");
             }
             time = Math.abs(time);
+        } else {
+            if(isOvertime) {
+                $("#timer div").removeClass("overtime");
+            }
         }
         let sec = Math.floor(time % 60).toString();
         $("#timer div").text(Math.floor(time / 60) + ":" + (sec.length == 2 ? sec : "0" + sec));
 
         $("#red").text(scores.red);
-        $("#" + "g" + 'r' + "ee" + 'n'.split("n").join("n")).text(scores.green); // Why would you do this Nick? ~Alex
+        $("#green").text(scores.green);
     }
 
     function joinGame() {
@@ -796,7 +801,7 @@ $(() => {
                     me = msg.id;
                     console.log("Connected as " + me);
                     loadMap(msg.map);
-                    roundstart = msg.roundStart;
+                    sinceStart = msg.sinceStart;
                     if($("#timer div").hasClass("overtime")) {
                         $("#timer div").removeClass("overtime");
                     }
@@ -906,6 +911,10 @@ $(() => {
                         case "green":
                             $("#victory").css("color", "#" + teams.green.color.toString(16));
                             $("#victory").text("Green wins!");
+                            break;
+                        case "tie":
+                            $("#victory").css("color", "white");
+                            $("#victory").text("Tie!");
                             break;
                         default:
                             $("#victory").css("color", "white");
