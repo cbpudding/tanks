@@ -730,6 +730,7 @@ $(() => {
             let msg = JSON.parse(event.data);
             switch(msg.type) {
                 case 0:
+                    sinceStart = msg.sinceStart;
                     let challenge = msg.challenge;
                     let payload = {type: 1, challenge};
                     if(localTank) {
@@ -801,7 +802,6 @@ $(() => {
                     me = msg.id;
                     console.log("Connected as " + me);
                     loadMap(msg.map);
-                    sinceStart = msg.sinceStart;
                     if($("#timer div").hasClass("overtime")) {
                         $("#timer div").removeClass("overtime");
                     }
