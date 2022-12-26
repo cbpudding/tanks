@@ -605,14 +605,6 @@ setInterval(() => {
     wss.clients.forEach(client => {
         if(client.readyState === WebSocket.OPEN) {
             if(now - client.last > 2000) {
-                switch(client.team) {
-                    case "green":
-                        team--;
-                        break;
-                    case "red":
-                        team++;
-                        break;
-                }
                 wss.clients.forEach(player => {
                     if(player.readyState === WebSocket.OPEN) {
                         player.send(JSON.stringify({type: 4, id: client.id, killer: client.id, method: "disconnect", killstreak: 0}));
